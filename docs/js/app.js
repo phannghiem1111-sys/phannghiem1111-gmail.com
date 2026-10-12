@@ -229,6 +229,7 @@
         <p>${esc(text)}</p>
         ${v.item ? `<div class="verdict-facts"><span>${esc(v.item.item)}</span><span>Mã ${esc(v.item.code || '—')}</span><span>${esc(v.item.reason || 'Chưa có nội dung hư hỏng')}</span></div>` : ''}
         ${v.notes.length ? `<ul class="notes">${v.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+        ${v.item && window.WarrantyTicketsUI && WarrantyTicketsUI.canWrite() ? `<div class="actions"><button type="button" class="btn btn-primary" data-open-ticket>Tạo sự vụ cho hạng mục này</button></div>` : ''}
         ${v.item ? `<div class="actions">${mailComposer({ store: v.store, item: v.item, request: openReq, warranty: v.warranty })}</div>` : ''}
       </section>`;
   }
@@ -559,6 +560,10 @@
       state.reason = e.target.value;
       renderLookup();
     });
+    $('#verdict').addEventListener('click', (e) => {
+      if (!e.target.closest('[data-open-ticket]') || !window.WarrantyTicketsUI) return;
+      WarrantyTicketsUI.openCreate({ storeCode: state.storeCode, item: state.item, reason: state.reason });
+    });
     $('#reason-hint').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-use-reason]');
       if (!btn) return;
@@ -618,6 +623,7 @@
           getContacts: () => CONTACTS,
           esc,
           fmt,
+          showTab,
         })
         .catch((err) => console.error('Khởi tạo sự vụ lỗi:', err));
     }

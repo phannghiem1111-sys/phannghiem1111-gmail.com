@@ -150,6 +150,7 @@
     .tk-table td .code { white-space: nowrap; }
     .kpis-tk { grid-template-columns: repeat(2, 1fr); }
     @media (min-width: 900px) { .kpis-tk { grid-template-columns: repeat(4, 1fr); } }
+    #tk-analysis h3 { font-size: 14px; margin: 14px 0 6px; }
     /* Kiểm tra bảo hành và sự vụ */
     .ops { display: grid; gap: 14px; grid-template-columns: 1fr; margin-bottom: 14px; }
     .ops > .card { margin-bottom: 0; }
@@ -301,7 +302,7 @@
       .grid2 { grid-template-columns: 1fr 1fr; }
       .kpis { grid-template-columns: repeat(6, 1fr); }
       .card { padding: 18px; }
-      .tabs { width: 360px; margin-left: auto; }
+      .tabs { width: 480px; margin-left: auto; }
       .topbar-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding-top: 14px; }
       .topbar-inner .tabs { margin-top: 0; }
       .topbar-inner .brand { align-self: center; }
@@ -320,6 +321,7 @@
       </div>
       <nav class="tabs" role="tablist" aria-label="Chọn màn hình">
         <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="lookup">Tra cứu</button>
+        <button type="button" class="tab" role="tab" aria-selected="false" data-tab="tickets">Sự vụ</button>
         <button type="button" class="tab" role="tab" aria-selected="false" data-tab="dashboard">Dashboard</button>
       </nav>
     </div>
@@ -366,30 +368,8 @@
       </div>
     </section>
 
-    <!-- Tab Dashboard -->
-    <section id="view-dashboard" class="view" role="tabpanel" hidden>
-      <div class="toolbar">
-        <label>
-          <span>Tính đến ngày</span>
-          <input id="asof" type="date">
-        </label>
-        <button type="button" id="btn-today" class="btn btn-ghost"><i class="fa-regular fa-calendar" aria-hidden="true"></i>Hôm nay</button>
-      </div>
-
-      <section class="ops" aria-label="Kiểm tra bảo hành và sự vụ">
-        <div class="card" id="check-card">
-          <div class="card-head">
-            <h2><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Kiểm tra bảo hành</h2>
-            <span class="muted small">Chọn cửa hàng, hạng mục, nội dung hư hỏng</span>
-          </div>
-          <div class="form-grid">
-            <label class="field"><span>Cửa hàng</span><select id="k-store"></select></label>
-            <label class="field"><span>Hạng mục (BOQ)</span><select id="k-item" disabled></select></label>
-            <label class="field"><span>Nội dung hư hỏng</span><select id="k-reason" disabled></select></label>
-          </div>
-          <div id="k-verdict"></div>
-        </div>
-
+    <!-- Tab Sự vụ: tạo sự vụ gửi nhà thầu, danh sách, ghi nhận tình trạng, biên bản PDF -->
+    <section id="view-tickets" class="view" role="tabpanel" hidden>
         <div class="card" id="new-card">
           <div class="card-head">
             <h2><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i> Tạo sự vụ gửi nhà thầu</h2>
@@ -416,8 +396,6 @@
           </form>
           <p id="tk-readonly" class="muted small" hidden>Tài khoản này chỉ xem được. Cần quyền Contributor trở lên để tạo sự vụ.</p>
         </div>
-      </section>
-
       <div class="card" id="tickets-card">
         <div class="card-head">
           <h2><i class="fa-solid fa-ticket" aria-hidden="true"></i> Sự vụ</h2>
@@ -429,16 +407,43 @@
           </div>
         </div>
         <p id="tk-mode" class="muted small req-meta"></p>
-        <div id="tk-alerts"></div>
         <div id="tk-list" class="table-wrap"></div>
       </div>
 
       <section class="card" id="ticket-detail" hidden>
         <div id="tk-detail"></div>
       </section>
+    </section>
+
+    <!-- Tab Dashboard: chỉ phân tích tổng hợp -->
+    <section id="view-dashboard" class="view" role="tabpanel" hidden>
+      <div class="toolbar">
+        <label>
+          <span>Tính đến ngày</span>
+          <input id="asof" type="date">
+        </label>
+        <button type="button" id="btn-today" class="btn btn-ghost"><i class="fa-regular fa-calendar" aria-hidden="true"></i>Hôm nay</button>
+      </div>
+
+
+      <section class="card" id="tk-analysis" aria-label="Phân tích sự vụ">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-chart-bar" aria-hidden="true"></i> Phân tích sự vụ</h2>
+          <span class="muted small">Tổng hợp từ các sự vụ đã tạo ở tab Sự vụ</span>
+        </div>
+        <div id="kpis-tk" class="kpis kpis-tk" aria-label="Số liệu sự vụ"></div>
+        <div id="tk-alerts"></div>
+        <div class="grid2">
+          <div><h3>Theo trạng thái</h3><div id="tk-status-bars"></div></div>
+          <div><h3>Thời gian xử lý và theo tháng</h3><p id="tk-avg" class="muted small"></p><div id="tk-by-month"></div></div>
+        </div>
+        <div class="grid2">
+          <div><h3>Theo cửa hàng</h3><div class="table-wrap" id="tk-by-store"></div></div>
+          <div><h3>Theo nhà thầu</h3><div class="table-wrap" id="tk-by-contractor"></div></div>
+        </div>
+      </section>
 
       <div id="kpis" class="kpis"></div>
-      <div id="kpis-tk" class="kpis kpis-tk" aria-label="Số liệu sự vụ"></div>
 
       <div class="grid2">
         <div id="warnings" class="card"></div>

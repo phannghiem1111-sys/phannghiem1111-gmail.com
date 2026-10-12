@@ -88,7 +88,13 @@ Ngưỡng và quy tắc nằm ở đầu `docs/js/analysis.js` (`CONFIG`) và tr
 
 ## Kiểm tra bảo hành, sự vụ và biên bản PDF
 
-Trên đầu dashboard có ba phần:
+Ứng dụng có ba tab:
+
+- **Tra cứu:** chọn cửa hàng, hạng mục, nội dung hư hỏng để kiểm tra bảo hành. Bấm **Tạo sự vụ cho hạng mục này** sẽ chuyển sang tab Sự vụ và điền sẵn thông tin.
+- **Sự vụ:** tạo sự vụ gửi nhà thầu, xem danh sách, ghi nhận tình trạng, xuất biên bản PDF.
+- **Dashboard:** chỉ hiển thị phân tích tổng hợp sự vụ (số liệu, trạng thái, thời gian xử lý, theo tháng, theo cửa hàng và nhà thầu) và cảnh báo sự vụ quá hạn.
+
+Chi tiết từng phần:
 
 1. **Kiểm tra bảo hành.** Chọn cửa hàng, hạng mục, nội dung hư hỏng. Kết quả cho biết còn hay hết bảo hành, và có cảnh báo nếu dữ liệu chưa khớp. Bấm **Tạo sự vụ cho hạng mục này** để điền sẵn form.
 2. **Tạo sự vụ gửi nhà thầu.** Nhập hạng mục, mức độ, hạn nhà thầu phản hồi, người tạo và mô tả. Hệ thống ghi lại tình trạng bảo hành lúc tạo. Mã sự vụ có dạng `SV-YYMM-XXXX`.
