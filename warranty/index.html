@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảo hành cửa hàng · WinCommerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --brand: #DA251D;
+      --brand-dark: #B81C15;
+      --gold: #FFC72C;
+      --ink: #0f172a;
+      --ink-2: #334155;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --ok: #15803d; --ok-bg: #dcfce7;
+      --warn: #a16207; --warn-bg: #fef9c3;
+      --crit: #c2410c; --crit-bg: #ffedd5;
+      --err: #b91c1c; --err-bg: #fee2e2;
+      --info: #1d4ed8; --info-bg: #dbeafe;
+      --gray: #475569; --gray-bg: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); }
+    body {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px; line-height: 1.45; min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    button, input, select { font: inherit; }
+    main { flex: 1; width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    h2 .count { margin-left: auto; font-size: 12px; background: var(--gray-bg); color: var(--gray); border-radius: 999px; padding: 2px 9px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12.5px; }
+    .empty { color: var(--muted); background: #f8fafc; border: 1px dashed var(--line); border-radius: 12px; padding: 14px; margin: 0; text-align: center; }
+
+    /* Thanh trên */
+    .topbar { background: var(--brand); color: #fff; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(15, 23, 42, .2); }
+    .topbar-inner { max-width: 1100px; margin: 0 auto; padding: 12px 16px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo { background: #fff; color: var(--brand); font-weight: 800; font-size: 12px; padding: 5px 8px; border-radius: 6px; letter-spacing: .5px; }
+    .brand h1 { font-size: 17px; margin: 0; font-weight: 700; }
+    .brand p { margin: 0; font-size: 12.5px; opacity: .9; }
+    .tabs { display: flex; gap: 6px; margin-top: 12px; }
+    .tab {
+      flex: 1; border: 0; background: rgba(255,255,255,.14); color: #fff; font-weight: 600;
+      padding: 11px 10px; border-radius: 10px 10px 0 0; cursor: pointer; min-height: 44px;
+    }
+    .tab.is-active { background: var(--bg); color: var(--brand-dark); }
+    .tab:focus-visible, .btn:focus-visible, .chip:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+    /* Thẻ và form */
+    .card { background: var(--card); border-radius: 14px; padding: 16px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 1px 1px rgba(15,23,42,.04); margin-bottom: 14px; }
+    .card + .card { margin-top: 0; }
+    .field { display: block; margin-top: 12px; }
+    .field:first-of-type { margin-top: 0; }
+    .field > span { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+    input[type="text"], input[type="search"], input[type="date"], select {
+      width: 100%; min-height: 48px; border: 1px solid #cbd5e1; border-radius: 10px;
+      padding: 10px 12px; font-size: 16px; background: #fff; color: var(--ink);
+    }
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 6px; margin: 10px -2px 0; scrollbar-width: thin; }
+    .chip {
+      flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+      border: 1px solid #cbd5e1; background: #fff; border-radius: 12px; padding: 8px 12px; min-height: 44px; cursor: pointer; max-width: 240px;
+    }
+    .chip strong { font-size: 14px; }
+    .chip span { font-size: 12px; color: var(--muted); }
+    .chip.is-active { border-color: var(--brand); background: #fff1f0; }
+    .store-card { border-left: 4px solid var(--brand); background: #fafafa; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+    .store-card-top { font-size: 15px; }
+    .store-card-bottom { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px;
+      border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: 14px; text-decoration: none;
+      border: 1px solid transparent; cursor: pointer; background: #fff; color: var(--ink-2); border-color: #cbd5e1;
+    }
+    .btn-ghost:hover { background: #f8fafc; }
+    .btn-mail { color: var(--brand-dark); border-color: #fecaca; background: #fff5f5; }
+    .btn-mail:hover { background: #fee2e2; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .actions .btn { flex: 1 1 140px; }
+
+    /* Huy hiệu */
+    .badge { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+    .b-ok { background: var(--ok-bg); color: var(--ok); }
+    .b-warn { background: var(--warn-bg); color: var(--warn); }
+    .b-crit { background: var(--crit-bg); color: var(--crit); }
+    .b-err { background: var(--err-bg); color: var(--err); }
+    .b-gray { background: var(--gray-bg); color: var(--gray); }
+
+    /* Kết quả xác nhận */
+    .verdict { border-radius: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid; }
+    .verdict p { margin: 6px 0 0; }
+    .verdict-title { font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 9px; }
+    .verdict-title i { font-size: 20px; }
+    .verdict-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .verdict-facts span { background: rgba(255,255,255,.7); border: 1px solid rgba(15,23,42,.08); border-radius: 8px; padding: 4px 8px; font-size: 12.5px; }
+    .notes { margin: 10px 0 0; padding-left: 18px; font-size: 13px; }
+    .hint { font-size: 13px; color: var(--ink-2); margin: 8px 0 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .hint button { border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; padding: 4px 10px; cursor: pointer; font-weight: 600; min-height: 32px; }
+    .hint button:hover { background: #f8fafc; }
+    .v-ok { background: var(--ok-bg); border-color: #86efac; color: #14532d; }
+    .v-err { background: var(--err-bg); border-color: #fca5a5; color: #7f1d1d; }
+    .v-warn { background: var(--warn-bg); border-color: #fde047; color: #713f12; }
+
+    /* Thẻ hạng mục */
+    .case { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+    .case-head, .store-row-top, .req-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+    .code { font-weight: 800; color: var(--brand-dark); background: #fff1f0; border-radius: 6px; padding: 2px 7px; font-size: 13px; margin-right: 4px; }
+    .sname { color: var(--ink-2); font-size: 13.5px; }
+    .facts, .mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 12px 0 0; }
+    .facts .wide { grid-column: 1 / -1; }
+    .facts dt, .mini dt { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+    .facts dd, .mini dd { margin: 2px 0 0; font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+    .reqline { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+    .reqline span { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* Dashboard */
+    .toolbar { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+    .toolbar label { flex: 1 1 200px; }
+    .toolbar label span { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+    .toolbar input { max-width: 100%; }
+    .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .kpi { background: var(--card); border-radius: 14px; padding: 14px; border-top: 4px solid #cbd5e1; box-shadow: 0 1px 2px rgba(15,23,42,.06); }
+    .kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
+    .kpi-label { font-size: 13px; font-weight: 600; margin-top: 4px; }
+    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .kpi-ok { border-top-color: var(--ok); }
+    .kpi-warn { border-top-color: #eab308; }
+    .kpi-err { border-top-color: var(--err); }
+    .kpi-err .kpi-value { color: var(--err); }
+    .kpi-warn .kpi-value { color: var(--warn); }
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .lines li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; font-size: 14px; }
+    .lines li i { margin-top: 3px; }
+    .warn-line { background: var(--warn-bg); }
+    .ok-line { background: var(--ok-bg); }
+    .err-line { background: var(--err-bg); }
+    .store-row { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+    .progress { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin: 10px 0 6px; }
+    .progress i { display: block; height: 100%; background: linear-gradient(90deg, var(--ok), #84cc16); border-radius: 999px; }
+    .req { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; background: #fff; }
+    .req-title { font-weight: 700; margin-top: 8px; }
+    .req-status { margin-top: 10px; font-size: 13.5px; background: #f8fafc; border-radius: 8px; padding: 8px 10px; }
+    .req-response { margin-top: 6px; font-size: 13px; }
+    .bar-row { display: grid; grid-template-columns: minmax(0, 1fr) 2fr auto; gap: 10px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+    .bar-label { overflow-wrap: anywhere; }
+    .bar { height: 12px; background: #e2e8f0; border-radius: 999px; overflow: hidden; min-width: 8px; }
+    .bar i { display: block; height: 100%; background: var(--brand); border-radius: 999px; }
+    .bar-val { font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+    .check { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: #fff; }
+    .check summary { cursor: pointer; display: flex; align-items: flex-start; gap: 8px; list-style: none; }
+    .check summary::-webkit-details-marker { display: none; }
+    .check summary i { margin-top: 3px; }
+    .check-title { flex: 1; font-size: 14px; }
+    .check .sev { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; margin-right: 4px; }
+    .check .count { font-weight: 800; background: var(--gray-bg); border-radius: 999px; padding: 1px 9px; font-size: 13px; }
+    .check p { font-size: 13px; color: var(--ink-2); margin: 8px 0 4px; }
+    .check ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); }
+    .sev-err { border-left-color: var(--err); }
+    .sev-err i, .sev-err .sev { color: var(--err); }
+    .sev-warn { border-left-color: #eab308; }
+    .sev-warn i, .sev-warn .sev { color: var(--warn); }
+    .sev-info { border-left-color: var(--info); }
+    .sev-info i, .sev-info .sev { color: var(--info); }
+    .ok-list { margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .ok-list summary { cursor: pointer; }
+    .ok-list ul { padding-left: 18px; }
+    footer { text-align: center; font-size: 12px; color: var(--muted); padding: 16px; }
+
+    /* Màn hình rộng */
+    @media (min-width: 560px) {
+      .kpis { grid-template-columns: repeat(3, 1fr); }
+      .facts, .mini { grid-template-columns: 1fr 1fr 1fr; }
+      .facts .wide { grid-column: span 2; }
+    }
+    @media (min-width: 900px) {
+      main { padding: 22px 20px; }
+      .grid2 { grid-template-columns: 1fr 1fr; }
+      .kpis { grid-template-columns: repeat(6, 1fr); }
+      .card { padding: 18px; }
+      .tabs { width: 360px; margin-left: auto; }
+      .topbar-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding-top: 14px; }
+      .topbar-inner .tabs { margin-top: 0; }
+      .topbar-inner .brand { align-self: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="logo">WCM</span>
+        <div>
+          <h1>Bảo hành cửa hàng</h1>
+          <p id="as-of-label">&nbsp;</p>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Chọn màn hình">
+        <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="lookup">Tra cứu</button>
+        <button type="button" class="tab" role="tab" aria-selected="false" data-tab="dashboard">Dashboard</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Tab Tra cứu: chọn cửa hàng -> nhóm/hạng mục -> nội dung hư hỏng để xác nhận bảo hành -->
+    <section id="view-lookup" class="view" role="tabpanel">
+      <div class="card">
+        <h2>1. Cửa hàng</h2>
+        <label class="field">
+          <span>Nhập hoặc chạm mã cửa hàng</span>
+          <input id="f-store" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" placeholder="Ví dụ: 2CAO">
+        </label>
+        <div id="store-chips" class="chips" aria-label="Danh sách cửa hàng"></div>
+        <div id="store-card"></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Hạng mục và nội dung hư hỏng</h2>
+        <label class="field">
+          <span>Nhóm hạng mục</span>
+          <select id="f-category"></select>
+        </label>
+        <label class="field">
+          <span>Hạng mục chi tiết (BOQ)</span>
+          <select id="f-item"></select>
+        </label>
+        <label class="field">
+          <span>Nội dung hư hỏng</span>
+          <select id="f-reason"></select>
+        </label>
+        <p id="reason-hint" class="hint" hidden></p>
+        <div class="btn-row">
+          <button type="button" id="btn-clear" class="btn btn-ghost"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Xóa lựa chọn</button>
+        </div>
+      </div>
+
+      <div id="verdict"></div>
+
+      <div id="results-block" class="card">
+        <h2>Kết quả <span id="result-count" class="count"></span></h2>
+        <div id="results"></div>
+        <div class="btn-row">
+          <button type="button" id="btn-more" class="btn btn-ghost" hidden>Xem thêm</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Dashboard -->
+    <section id="view-dashboard" class="view" role="tabpanel" hidden>
+      <div class="toolbar">
+        <label>
+          <span>Tính đến ngày</span>
+          <input id="asof" type="date">
+        </label>
+        <button type="button" id="btn-today" class="btn btn-ghost"><i class="fa-regular fa-calendar" aria-hidden="true"></i>Hôm nay</button>
+      </div>
+
+      <div id="kpis" class="kpis"></div>
+
+      <div class="grid2">
+        <div id="warnings" class="card"></div>
+        <div id="checks" class="card"></div>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Cửa hàng còn bảo hành</h2>
+        <div id="store-list"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Lỗi cần xử lý <span id="open-count" class="count">0</span></h2>
+          <div id="open-list"></div>
+        </div>
+        <div class="card">
+          <h2><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Đã xử lý / đã đóng <span id="closed-count" class="count">0</span></h2>
+          <div id="closed-list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-chart-bar" aria-hidden="true"></i> Yêu cầu theo nhóm hạng mục</h2>
+        <p class="muted small" style="margin:0 0 12px">Thanh đỏ đậm là phần đang mở. Số bên phải là đang mở / tổng số yêu cầu.</p>
+        <div id="category-bars"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer-source"></footer>
+
+  <script src="data/warranty-data.js"></script>
+  <script src="data/contacts.js"></script>
+  <script src="js/analysis.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
