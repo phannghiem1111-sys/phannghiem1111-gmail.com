@@ -153,10 +153,8 @@
       </section>`;
   }
 
-  /** Một thẻ cho mỗi cửa hàng: thông tin và nút gửi email một lần, hạng mục gom theo nhóm có thể mở ra. */
-  function storeGroupCard(store, cases) {
-    const warranty = A.warrantyInfo(store.handover, store.warrantyEnd, state.asOf);
-    const openReqs = state.model.requests.filter((r) => r.storeCode === store.code && r.isOpen);
+  /** Hạng mục gom theo nhóm, mỗi nhóm là một mục có thể mở. Dùng chung cho tra cứu và dashboard. */
+  function categoryGroupsHtml(cases) {
     const groups = new Map();
     for (const c of cases) {
       if (!groups.has(c.item.category)) groups.set(c.item.category, []);
@@ -175,7 +173,7 @@
           <div class="row-side"><span class="row-code">${esc(c.item.code || '—')}</span>${open}</div>
         </li>`;
     };
-    const body = [...groups.entries()]
+    const html = [...groups.entries()]
       .map(
         ([category, list]) => `
           <details class="cat-group"${openByDefault}>
@@ -184,14 +182,22 @@
           </details>`
       )
       .join('');
+    return { html, groupCount: groups.size };
+  }
+
+  /** Một thẻ cho mỗi cửa hàng: thông tin và nút gửi email một lần, hạng mục gom theo nhóm. */
+  function storeGroupCard(store, cases) {
+    const warranty = A.warrantyInfo(store.handover, store.warrantyEnd, state.asOf);
+    const openReqs = state.model.requests.filter((r) => r.storeCode === store.code && r.isOpen);
+    const { html, groupCount } = categoryGroupsHtml(cases);
     return `
       <article class="case-group">
         <header class="case-head">
           <div class="store-id"><span class="code">${esc(store.code)}</span><span class="sname">${esc(store.storeName || '')}</span></div>
           ${warrantyBadge(warranty)}
         </header>
-        <p class="muted small">${esc(store.region || 'Chưa có miền')} · ${esc(store.contractor || 'Chưa có nhà thầu')} · ${cases.length} hạng mục trong ${groups.size} nhóm · ${openReqs.length} yêu cầu đang mở</p>
-        ${body}
+        <p class="muted small">${esc(store.region || 'Chưa có miền')} · ${esc(store.contractor || 'Chưa có nhà thầu')} · ${cases.length} hạng mục trong ${groupCount} nhóm · ${openReqs.length} yêu cầu đang mở</p>
+        ${html}
         <div class="actions">${mailButtons({
           store,
           item: null,
@@ -299,6 +305,8 @@
           .map((s) => {
             const w = s.warranty;
             const pct = w.progress ?? 0;
+            const cases = A.searchCases(state.model, { storeCode: s.code });
+            const groups = categoryGroupsHtml(cases);
             return `
               <article class="store-row">
                 <div class="store-row-top">
@@ -308,6 +316,10 @@
                 <div class="muted small">${esc(s.region || 'Chưa có miền')} · ${esc(s.contractor || 'Chưa có nhà thầu')} · ${s.itemCount} hạng mục · ${s.openCount} yêu cầu mở</div>
                 <div class="progress" role="img" aria-label="Đã dùng ${pct}% thời hạn bảo hành"><i style="width:${pct}%"></i></div>
                 <div class="muted small">Ngày KT ${fmt(s.handover)} → hết BH ${fmt(s.warrantyEnd)} (đã dùng ${pct}%)</div>
+                <details class="store-items">
+                  <summary>Xem ${cases.length} hạng mục theo ${groups.groupCount} nhóm</summary>
+                  ${groups.html}
+                </details>
               </article>`;
           })
           .join('')

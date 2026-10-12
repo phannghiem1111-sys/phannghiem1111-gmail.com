@@ -124,6 +124,10 @@
     .reqline { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
     .reqline span { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
+    .store-items { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 4px; }
+    .store-items > summary { cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--brand-dark); padding: 8px 0; list-style: none; }
+    .store-items > summary::-webkit-details-marker { display: none; }
+    .store-items .cat-group:first-of-type { border-top: 0; }
     /* Hạng mục gom theo nhóm trong một cửa hàng */
     .cat-group { border-bottom: 1px solid var(--line); }
     .cat-group:last-of-type { border-bottom: 0; }
