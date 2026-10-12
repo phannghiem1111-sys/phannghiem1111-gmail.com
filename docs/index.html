@@ -139,6 +139,35 @@
     .cat-group[open] summary::after { transform: rotate(180deg); }
     .cat-group .rows { margin: 0 0 10px; border-top: 0; }
 
+    /* Kiểm tra bảo hành và sự vụ */
+    .ops { display: grid; gap: 14px; grid-template-columns: 1fr; margin-bottom: 14px; }
+    .ops > .card { margin-bottom: 0; }
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+    .form-grid .field { margin-top: 10px; }
+    .form-block { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .form-block h3, #ticket-detail h3 { font-size: 14px; margin: 14px 0 6px; }
+    textarea { width: 100%; min-height: 84px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 16px; background: #fff; color: var(--ink); resize: vertical; }
+    .form-msg { font-size: 13px; color: var(--ink-2); min-height: 1.2em; margin-top: 8px; }
+    .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-danger { background: var(--err); border-color: var(--err); color: #fff; }
+    .b-info { background: var(--info-bg); color: var(--info); }
+    .tk-title { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 15px; }
+    #ticket-detail .card-head { align-items: flex-start; }
+    dl.kv { display: grid; grid-template-columns: 1fr; gap: 10px 14px; margin: 12px 0 0; }
+    dl.kv dt { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+    dl.kv dd { margin: 2px 0 0; font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+    .timeline { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+    .tl-item { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; padding: 0 0 14px 14px; position: relative; font-size: 13.5px; }
+    .tl-item::before { content: ""; position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
+    .tl-when { font-weight: 600; }
+    .tl-when span { display: block; }
+    .tl-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; overflow-wrap: anywhere; }
+    .tl-body .badge { margin-left: 4px; }
+    .card-head .btn-row { margin-top: 0; }
+    @media (min-width: 560px) { .form-grid { grid-template-columns: 1fr 1fr; } dl.kv { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 900px) { .form-grid { grid-template-columns: 1fr 1fr 1fr; } .ops { grid-template-columns: 1fr 1.25fr; align-items: start; } }
+
     /* Ô gửi email: chọn nhóm và người nhận, địa chỉ hiện sẵn để sao chép */
     .composer { display: grid; gap: 8px; background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 10px; min-width: 0; }
     .actions > .composer { flex: 1 1 100%; }
@@ -336,6 +365,66 @@
         <button type="button" id="btn-today" class="btn btn-ghost"><i class="fa-regular fa-calendar" aria-hidden="true"></i>Hôm nay</button>
       </div>
 
+      <section class="ops" aria-label="Kiểm tra bảo hành và sự vụ">
+        <div class="card" id="check-card">
+          <div class="card-head">
+            <h2><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Kiểm tra bảo hành</h2>
+            <span class="muted small">Chọn cửa hàng, hạng mục, nội dung hư hỏng</span>
+          </div>
+          <div class="form-grid">
+            <label class="field"><span>Cửa hàng</span><select id="k-store"></select></label>
+            <label class="field"><span>Hạng mục (BOQ)</span><select id="k-item" disabled></select></label>
+            <label class="field"><span>Nội dung hư hỏng</span><select id="k-reason" disabled></select></label>
+          </div>
+          <div id="k-verdict"></div>
+        </div>
+
+        <div class="card" id="new-card">
+          <div class="card-head">
+            <h2><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i> Tạo sự vụ gửi nhà thầu</h2>
+            <span class="muted small">Sự vụ được lưu và theo dõi tình trạng</span>
+          </div>
+          <form id="tk-form" novalidate>
+            <div class="form-grid">
+              <label class="field"><span>Cửa hàng</span><select id="f-tk-store" required></select></label>
+              <label class="field"><span>Hạng mục (BOQ)</span><select id="f-tk-item" required></select></label>
+              <label class="field"><span>Nội dung hư hỏng</span><input id="f-tk-reason" type="text" list="dl-tk-reason" placeholder="Chọn hoặc nhập"></label>
+              <label class="field"><span>Mức độ</span>
+                <select id="f-tk-priority"><option value="normal">Thường</option><option value="urgent">Gấp</option><option value="critical">Khẩn</option></select>
+              </label>
+              <label class="field"><span>Hạn nhà thầu phản hồi</span><input id="f-tk-deadline" type="date" required></label>
+              <label class="field"><span>Người tạo sự vụ</span><input id="f-tk-by" type="text" autocomplete="name" placeholder="Họ tên" required></label>
+            </div>
+            <datalist id="dl-tk-reason"></datalist>
+            <label class="field"><span>Mô tả chi tiết</span><textarea id="f-tk-detail" rows="3" placeholder="Hiện trạng, vị trí, thời điểm phát hiện"></textarea></label>
+            <div id="tk-form-msg" class="form-msg" role="status"></div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Tạo sự vụ</button>
+              <button type="button" id="tk-reset" class="btn btn-ghost">Làm lại</button>
+            </div>
+          </form>
+          <p id="tk-readonly" class="muted small" hidden>Tài khoản này chỉ xem được. Cần quyền Contributor trở lên để tạo sự vụ.</p>
+        </div>
+      </section>
+
+      <div class="card" id="tickets-card">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-ticket" aria-hidden="true"></i> Sự vụ</h2>
+          <div class="seg" role="group" aria-label="Lọc sự vụ">
+            <button type="button" class="seg-btn is-active" data-tkf="open" aria-pressed="true">Đang mở <span class="count">0</span></button>
+            <button type="button" class="seg-btn" data-tkf="overdue" aria-pressed="false">Quá hạn <span class="count">0</span></button>
+            <button type="button" class="seg-btn" data-tkf="closed" aria-pressed="false">Đã đóng <span class="count">0</span></button>
+            <button type="button" class="seg-btn" data-tkf="all" aria-pressed="false">Tất cả <span class="count">0</span></button>
+          </div>
+        </div>
+        <p id="tk-mode" class="muted small req-meta"></p>
+        <div id="tk-list" class="table-wrap"></div>
+      </div>
+
+      <section class="card" id="ticket-detail" hidden>
+        <div id="tk-detail"></div>
+      </section>
+
       <div id="kpis" class="kpis"></div>
 
       <div class="grid2">
@@ -373,6 +462,12 @@
   <script src="data/warranty-data.js"></script>
   <script src="data/contacts.js"></script>
   <script src="js/analysis.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="data/fonts-vi.js"></script>
+  <script src="js/tickets.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/pdf.js"></script>
+  <script src="js/tickets-ui.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

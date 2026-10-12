@@ -86,6 +86,31 @@ Ngưỡng và quy tắc nằm ở đầu `docs/js/analysis.js` (`CONFIG`) và tr
 | I02 | Ghi chú | Hạng mục chưa có PIC hoặc trạng thái |
 | I03 | Ghi chú | Hạng mục chưa có nội dung hư hỏng |
 
+## Kiểm tra bảo hành, sự vụ và biên bản PDF
+
+Trên đầu dashboard có ba phần:
+
+1. **Kiểm tra bảo hành.** Chọn cửa hàng, hạng mục, nội dung hư hỏng. Kết quả cho biết còn hay hết bảo hành, và có cảnh báo nếu dữ liệu chưa khớp. Bấm **Tạo sự vụ cho hạng mục này** để điền sẵn form.
+2. **Tạo sự vụ gửi nhà thầu.** Nhập hạng mục, mức độ, hạn nhà thầu phản hồi, người tạo và mô tả. Hệ thống ghi lại tình trạng bảo hành lúc tạo. Mã sự vụ có dạng `SV-YYMM-XXXX`.
+3. **Danh sách sự vụ.** Lọc theo đang mở, quá hạn, đã đóng hoặc tất cả. Mở **Xem** để thấy diễn biến và:
+   - **Đánh dấu đã gửi nhà thầu** khi đã gửi mail hoặc biên bản.
+   - **Ghi nhận tình trạng nhà thầu báo về**: chọn tình trạng, ngày nhà thầu báo, người ghi nhận và nội dung.
+   - **Xuất biên bản PDF**: biên bản có thông tin cửa hàng, tình trạng bảo hành, nội dung sự vụ, diễn biến và chỗ ký của hai bên.
+   - **Đóng sự vụ**: bấm hai lần để xác nhận.
+
+Trạng thái sự vụ lấy theo lần ghi nhận gần nhất: Mới, Đã gửi nhà thầu, Nhà thầu đã phản hồi, Đang xử lý, Đã xử lý, Đã đóng. Mỗi lần ghi nhận là một dòng riêng, nên hai người cập nhật cùng lúc không ghi đè nhau.
+
+### Nơi lưu sự vụ
+
+- **Trên link claude.ai (artifact):** sự vụ được lưu dùng chung. Mọi người có quyền xem đều thấy. Người tạo sự vụ và ghi nhận tình trạng cần quyền **Contributor** trở lên. Người chỉ có quyền Viewer chỉ xem được và thấy thông báo chỉ xem.
+- **Trên trang tĩnh (nso.wcm.vn hoặc mở file trực tiếp):** sự vụ chỉ lưu trong trình duyệt của máy đó. Muốn chia sẻ giữa nhiều người, dùng link claude.ai hoặc cần thêm máy chủ lưu trữ.
+
+### Biên bản PDF
+
+- Biên bản được tạo ngay trong trình duyệt bằng jsPDF 2.5.1 (tải từ cdnjs) và font DejaVu đã nhúng sẵn, nên hiển thị đủ dấu tiếng Việt.
+- Trên artifact, biên bản được trao cho người xem qua chức năng tải file của claude.ai, người xem có thể xác nhận hoặc từ chối lưu.
+- Chữ ký "Đại diện WCM" lấy từ `sender` trong `docs/data/contacts.js`. Cần điền tên người gửi thật trước khi xuất biên bản đầu tiên.
+
 ## Triển khai lên nso.wcm.vn
 
 1. **Bật GitHub Pages:** repo → Settings → Pages → Source chọn *Deploy from a branch*, Branch chọn `claude/warranty-store-analysis-cvqf4v`, thư mục chọn `/docs`, bấm Save.

@@ -512,6 +512,7 @@
     $('#as-of-label').textContent = `Tính đến ${fmt(state.asOf)}`;
     renderLookup();
     renderDashboard();
+    if (window.WarrantyTicketsUI) window.WarrantyTicketsUI.refresh();
   }
 
   function showTab(name) {
@@ -606,6 +607,20 @@
     $('#footer-source').textContent = `Nguồn: ${meta.sourceFile || '—'}${genAt ? ` · tạo lúc ${fmt(genAt[0])} ${genAt[1]}` : ''}`;
     bind();
     rebuild();
+    if (window.WarrantyTicketsUI) {
+      window.WarrantyTicketsUI
+        .init({
+          A,
+          T: window.WarrantyTickets,
+          P: window.WarrantyPdf,
+          getModel: () => state.model,
+          getAsOf: () => state.asOf,
+          getContacts: () => CONTACTS,
+          esc,
+          fmt,
+        })
+        .catch((err) => console.error('Khởi tạo sự vụ lỗi:', err));
+    }
   }
 
   init();
