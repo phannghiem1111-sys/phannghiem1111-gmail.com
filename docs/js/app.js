@@ -47,16 +47,96 @@
     return '<span class="badge b-warn">Đang mở</span>';
   }
 
-  /** Nút gửi email cho nhà thầu, cửa hàng, kỹ thuật. Link mailto có sẵn nội dung, người gửi bấm Gửi. */
-  function mailButtons(ctx, extra = '') {
-    const labels = { contractor: 'Mail nhà thầu', store: 'Mail cửa hàng', technician: 'Mail kỹ thuật' };
-    return Object.keys(labels)
-      .map((kind) => {
-        const m = A.buildMail(kind, { ...ctx, asOf: state.asOf }, CONTACTS);
-        const title = m.to ? `Gửi tới ${m.to}` : 'Chưa có email trong danh bạ, sẽ tự điền người nhận';
-        return `<a class="btn btn-mail ${extra}" href="${esc(m.href)}" title="${esc(title)}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>${labels[kind]}</a>`;
-      })
-      .join('');
+  /** Ô gửi email: chọn nhóm nhận, người nhận được chọn sẵn theo cửa hàng, địa chỉ hiện sẵn để sao chép. */
+  const composerCtx = new Map();
+  let composerSeq = 0;
+
+  function recipientOptionsHtml(group, selectedId) {
+    const list = A.recipientOptions(CONTACTS).filter((o) => o.group === group);
+    if (!list.length) return '<option value="">Chưa có trong danh bạ</option>';
+    // Không có người nào khớp thì hiện lựa chọn trống, không để trình duyệt chọn người đầu danh sách
+    const placeholder = selectedId ? '' : '<option value="" selected>— Chọn người nhận —</option>';
+    return (
+      placeholder +
+      list.map((o) => `<option value="${esc(o.id)}"${o.id === selectedId ? ' selected' : ''}>${esc(o.label)}</option>`).join('')
+    );
+  }
+
+  /** Dòng địa chỉ hiển thị: rõ ràng khi chưa chọn người hoặc người được chọn chưa có email. */
+  function addressText(mail) {
+    if (mail.group === 'none') return 'Chọn người nhận';
+    return mail.to || 'Chưa có email';
+  }
+
+  function groupOptionsHtml(selected) {
+    return A.GROUP_ORDER.map((g) => `<option value="${g}"${g === selected ? ' selected' : ''}>${esc(A.GROUP_LABEL[g])}</option>`).join('');
+  }
+
+  function mailComposer(ctx) {
+    const id = ++composerSeq;
+    composerCtx.set(id, ctx);
+    const group = 'contractor';
+    const options = A.recipientOptions(CONTACTS);
+    const picked = A.defaultRecipientId(ctx.store, group, options);
+    const mail = A.buildMail(options.find((o) => o.id === picked) || null, ctx, CONTACTS);
+    return `
+      <div class="composer" data-composer="${id}">
+        <div class="cp-row">
+          <label class="cp-field"><span>Nhóm nhận</span><select data-role="group">${groupOptionsHtml(group)}</select></label>
+          <label class="cp-field"><span>Người nhận</span><select data-role="person">${recipientOptionsHtml(group, picked)}</select></label>
+        </div>
+        <div class="cp-addr-row">
+          <span class="cp-addr">${esc(addressText(mail))}</span>
+          <button type="button" class="btn btn-ghost btn-sm" data-copy>Sao chép</button>
+        </div>
+        <div class="cp-cc muted small" ${mail.cc ? '' : 'hidden'}>${mail.cc ? `CC: ${esc(mail.cc)}` : ''}</div>
+        <a class="btn btn-mail btn-sm" data-mail href="${esc(mail.href)}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>Mở email</a>
+      </div>`;
+  }
+
+  function refreshComposer(root, picked) {
+    const ctx = composerCtx.get(Number(root.dataset.composer));
+    if (!ctx) return;
+    const mail = A.buildMail(picked, ctx, CONTACTS);
+    root.querySelector('.cp-addr').textContent = addressText(mail);
+    const cc = root.querySelector('.cp-cc');
+    cc.textContent = mail.cc ? `CC: ${mail.cc}` : '';
+    cc.hidden = !mail.cc;
+    root.querySelector('[data-mail]').href = mail.href;
+  }
+
+  function onComposerChange(e) {
+    const root = e.target.closest('.composer');
+    if (!root) return;
+    const ctx = composerCtx.get(Number(root.dataset.composer));
+    if (!ctx) return;
+    const groupSel = root.querySelector('[data-role="group"]');
+    const personSel = root.querySelector('[data-role="person"]');
+    const options = A.recipientOptions(CONTACTS);
+    if (e.target === groupSel) {
+      const auto = A.defaultRecipientId(ctx.store, groupSel.value, options);
+      personSel.innerHTML = recipientOptionsHtml(groupSel.value, auto);
+    }
+    refreshComposer(root, options.find((o) => o.id === personSel.value) || null);
+  }
+
+  function onComposerCopy(e) {
+    const btn = e.target.closest('[data-copy]');
+    if (!btn) return;
+    const text = btn.closest('.composer').querySelector('.cp-addr').textContent.trim();
+    if (!text || text === 'Chưa có email' || text === 'Chọn người nhận') return;
+    const flash = (msg) => {
+      btn.textContent = msg;
+      setTimeout(() => (btn.textContent = 'Sao chép'), 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => flash('Đã sao chép'),
+        () => flash('Hãy chọn và sao chép')
+      );
+    } else {
+      flash('Hãy chọn và sao chép');
+    }
   }
 
   /** Bối cảnh email cho một yêu cầu: gộp các hạng mục cùng mã đầu việc. */
@@ -149,7 +229,7 @@
         <p>${esc(text)}</p>
         ${v.item ? `<div class="verdict-facts"><span>${esc(v.item.item)}</span><span>Mã ${esc(v.item.code || '—')}</span><span>${esc(v.item.reason || 'Chưa có nội dung hư hỏng')}</span></div>` : ''}
         ${v.notes.length ? `<ul class="notes">${v.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
-        ${v.item ? `<div class="actions">${mailButtons({ store: v.store, item: v.item, request: openReq, warranty: v.warranty })}</div>` : ''}
+        ${v.item ? `<div class="actions">${mailComposer({ store: v.store, item: v.item, request: openReq, warranty: v.warranty })}</div>` : ''}
       </section>`;
   }
 
@@ -198,7 +278,7 @@
         </header>
         <p class="muted small">${esc(store.region || 'Chưa có miền')} · ${esc(store.contractor || 'Chưa có nhà thầu')} · ${cases.length} hạng mục trong ${groupCount} nhóm · ${openReqs.length} yêu cầu đang mở</p>
         ${html}
-        <div class="actions">${mailButtons({
+        <div class="actions">${mailComposer({
           store,
           item: null,
           items: cases.map((c) => c.item.item),
@@ -337,7 +417,7 @@
         <td data-label="Gửi → hạn" class="nowrap">${fmt(r.sentDate)} → ${fmt(r.deadline)}</td>
         <td data-label="Trạng thái">${requestBadge(r)}${r.statusText ? `<div class="muted small">${esc(r.statusText)}</div>` : ''}</td>
         <td data-label="Phản hồi gần nhất">${esc(r.response || '—')}</td>
-        <td data-label="Gửi email"><div class="mail-cell">${mailButtons(requestContext(model, r), 'btn-sm')}</div></td>
+        <td data-label="Gửi email"><div class="mail-cell">${mailComposer(requestContext(model, r))}</div></td>
       </tr>`;
   }
 
@@ -497,6 +577,9 @@
         renderRequests();
       })
     );
+
+    document.addEventListener('change', onComposerChange);
+    document.addEventListener('click', onComposerCopy);
 
     $('#asof').addEventListener('change', (e) => {
       if (!e.target.value) return;

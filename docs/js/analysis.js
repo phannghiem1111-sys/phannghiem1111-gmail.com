@@ -478,16 +478,59 @@
     };
   }
 
-  // ---------- Email: mailto có sẵn nội dung, người gửi bấm Gửi ----------
-  const KIND_LABEL = { contractor: 'Nhà thầu', store: 'Cửa hàng', technician: 'Kỹ thuật' };
+  // ---------- Email: người nhận lấy từ danh bạ, mailto có sẵn nội dung ----------
+  const GROUP_LABEL = {
+    contractor: 'Nhà thầu',
+    team: 'Kỹ thuật',
+    staff: 'Nhân viên kỹ thuật',
+    store: 'Cửa hàng',
+  };
+  const GROUP_ORDER = ['contractor', 'team', 'staff', 'store'];
+
+  /** Danh sách người nhận từ danh bạ. Mỗi mục có id ổn định, nhãn hiển thị và email (có thể trống). */
+  function recipientOptions(contacts = {}) {
+    const opts = [];
+    const add = (group, name, email, region) => {
+      const tags = [name, region ? `· ${region}` : '', email ? '' : '· chưa có email'].filter(Boolean);
+      opts.push({
+        id: `${group}:${name}`,
+        group,
+        name,
+        region: region || null,
+        email: email || '',
+        label: tags.join(' '),
+      });
+    };
+    for (const c of contacts.contractors || []) add('contractor', c.name, c.email);
+    for (const t of contacts.technicalTeams || []) add('team', t.name, t.email, t.region);
+    for (const t of contacts.technicians || []) add('staff', t.name, t.email, t.region);
+    for (const [code, s] of Object.entries(contacts.stores || {})) add('store', code, s && s.email);
+    return opts;
+  }
 
   /**
-   * kind: 'contractor' | 'store' | 'technician'
-   * ctx: { store, item, request?, warranty }  contacts: { contractors, stores, technicians, sender }
+   * Người nhận được chọn sẵn cho một nhóm, theo cửa hàng.
+   * Nhà thầu và cửa hàng khớp đúng tên hoặc mã. Kỹ thuật khớp theo miền, không có thì lấy người không ghi miền.
+   * Không khớp thì trả về null để người dùng tự chọn, không tự gán người sai.
    */
-  function buildMail(kind, ctx, contacts = {}) {
+  function defaultRecipientId(store, group, options) {
+    const inGroup = options.filter((o) => o.group === group);
+    let pick = null;
+    if (group === 'contractor') pick = inGroup.find((o) => o.name === store.contractor);
+    else if (group === 'store') pick = inGroup.find((o) => o.name === store.code);
+    else pick = inGroup.find((o) => o.region && o.region === store.region) || inGroup.find((o) => !o.region);
+    return pick ? pick.id : null;
+  }
+
+  /**
+   * recipient: mục lấy từ recipientOptions, hoặc null khi chưa chọn người.
+   * ctx: { store, item?, request?, warranty?, items? }  contacts: danh bạ.
+   */
+  function buildMail(recipient, ctx, contacts = {}) {
     const { store, item, request } = ctx;
     const names = ctx.items || [];
+    const options = recipientOptions(contacts);
+    const group = recipient ? recipient.group : 'none';
     const warranty = ctx.warranty || warrantyInfo(store.handover, store.warrantyEnd, ctx.asOf || todayIso());
     const reason = (request && request.reasonText) || (item && item.reason) || '';
     const itemName = item
@@ -501,32 +544,28 @@
             ...(names.length > 15 ? [`  • và ${names.length - 15} hạng mục khác`] : []),
           ]
         : [];
-    const techEmail =
-      (contacts.technicians && contacts.technicians[store.region]?.email) ||
-      (contacts.technicians && contacts.technicians.default?.email) ||
-      '';
 
-    let to = '';
-    let cc = '';
-    let greeting = '';
-    let ask = '';
-    if (kind === 'contractor') {
-      to = (contacts.contractors && contacts.contractors[store.contractor]?.email) || '';
-      cc = techEmail;
-      greeting = `Nhà thầu ${store.contractor || ''}`.trim();
-      ask = request?.deadline
+    // Nhà thầu và cửa hàng được CC cho đội kỹ thuật cùng miền
+    const teamId = defaultRecipientId(store, 'team', options);
+    const teamEmail = teamId ? options.find((o) => o.id === teamId).email : '';
+    const cc = (group === 'contractor' || group === 'store') && teamEmail && recipient.email !== teamEmail ? teamEmail : '';
+
+    const greeting = {
+      contractor: () => `Nhà thầu ${recipient.name}`,
+      team: () => recipient.name,
+      staff: () => recipient.name,
+      store: () => `Cửa hàng ${store.code}${store.storeName ? ' - ' + store.storeName : ''}`,
+      none: () => 'Anh/Chị',
+    }[group]();
+    const ask = {
+      contractor: request?.deadline
         ? `Đề nghị nhà thầu xác nhận phương án xử lý và thời gian cam kết hoàn thành, phản hồi trước ngày ${formatDate(request.deadline)}.`
-        : 'Đề nghị nhà thầu xác nhận phương án xử lý và thời gian cam kết hoàn thành.';
-    } else if (kind === 'store') {
-      to = (contacts.stores && contacts.stores[store.code]?.email) || '';
-      cc = techEmail;
-      greeting = `Cửa hàng ${store.code}${store.storeName ? ' - ' + store.storeName : ''}`;
-      ask = 'Đề nghị cửa hàng phối hợp để nhà thầu/kỹ thuật vào kiểm tra và xử lý, đồng thời xác nhận lịch hẹn.';
-    } else {
-      to = techEmail;
-      greeting = `Kỹ thuật ${store.region || ''}`.trim();
-      ask = 'Đề nghị kỹ thuật kiểm tra, xác nhận nguyên nhân và hướng xử lý.';
-    }
+        : 'Đề nghị nhà thầu xác nhận phương án xử lý và thời gian cam kết hoàn thành.',
+      store: 'Đề nghị cửa hàng phối hợp để nhà thầu/kỹ thuật vào kiểm tra và xử lý, đồng thời xác nhận lịch hẹn.',
+      team: 'Đề nghị kỹ thuật kiểm tra, xác nhận nguyên nhân và hướng xử lý.',
+      staff: 'Đề nghị kiểm tra, xác nhận nguyên nhân và hướng xử lý.',
+      none: 'Đề nghị xem và phản hồi.',
+    }[group];
 
     const warrantyLine =
       warranty.status === 'expired'
@@ -563,16 +602,19 @@
     lines.push('', ask, '', 'Trân trọng,', contacts.sender || '[Tên người gửi]');
     const body = lines.join('\n');
 
+    const to = recipient ? recipient.email : '';
     const params = [];
     if (cc) params.push(`cc=${encodeURIComponent(cc)}`);
     params.push(`subject=${encodeURIComponent(subject)}`, `body=${encodeURIComponent(body)}`);
     const href = `mailto:${to.split(',').map((a) => encodeURIComponent(a.trim())).filter(Boolean).join(',')}?${params.join('&')}`;
-    return { kind, label: KIND_LABEL[kind], to, cc, subject, body, href };
+    return { group, label: GROUP_LABEL[group] || '', to, cc, subject, body, href };
   }
 
   return {
     CONFIG,
     STATUS_LABEL,
+    GROUP_LABEL,
+    GROUP_ORDER,
     parseIso,
     daysBetween,
     todayIso,
@@ -588,6 +630,8 @@
     facetOptions,
     confirmCase,
     buildDashboard,
+    recipientOptions,
+    defaultRecipientId,
     buildMail,
   };
 });

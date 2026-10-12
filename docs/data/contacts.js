@@ -1,24 +1,31 @@
-// Danh bạ nhận email. Sửa file này rồi tải lại trang, không cần chạy lại build_data.py.
-// Để trống "email" thì nút gửi vẫn mở được, người gửi tự điền người nhận.
-// Tên nhà thầu và mã cửa hàng phải khớp đúng với file Excel.
+// Danh bạ người nhận email. Sửa file này rồi tải lại trang, không cần chạy lại build_data.py.
+//
+// - "name" của nhà thầu phải khớp đúng cột "Nhà Thầu" trong Excel.
+// - "region" phải khớp đúng cột "Miền". Khi chọn người nhận, hệ thống ưu tiên người cùng miền với cửa hàng.
+// - Để trống "email" thì vẫn chọn được người nhận, nhưng phải tự điền địa chỉ khi gửi.
+// - Thêm người mới: thêm một dòng vào đúng danh sách bên dưới, có dấu phẩy ở cuối dòng.
 window.WARRANTY_CONTACTS = {
   // Chữ ký cuối email
   sender: '[Họ tên người gửi - bộ phận P.XD/P.KT]',
 
-  // Key: tên nhà thầu trong cột "Nhà Thầu" của Excel
-  contractors: {
-    'Phú Mỹ': { email: '' },
-  },
+  // Nhà thầu. Khi mở cửa hàng, nhà thầu của cửa hàng được chọn sẵn.
+  contractors: [
+    { name: 'Phú Mỹ', email: '' },
+  ],
 
-  // Key: mã cửa hàng (cột "Mã CH")
+  // Đội kỹ thuật (hộp thư nhóm). Được đưa vào CC khi gửi cho nhà thầu hoặc cửa hàng.
+  technicalTeams: [
+    { name: 'Kỹ thuật Miền Nam', region: 'Miền Nam', email: '' },
+  ],
+
+  // Nhân viên kỹ thuật (cá nhân). Thay bằng danh sách thật.
+  technicians: [
+    { name: 'Nguyễn Văn A', region: 'Miền Nam', email: '' },
+  ],
+
+  // Cửa hàng. Key là mã cửa hàng trong Excel.
   stores: {
     '2CAO': { email: '' },
     '2CBA': { email: '' },
-  },
-
-  // Key: miền (cột "Miền"). "default" dùng khi miền không có trong danh sách.
-  technicians: {
-    'Miền Nam': { email: '' },
-    default: { email: '' },
   },
 };

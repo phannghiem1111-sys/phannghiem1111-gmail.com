@@ -101,14 +101,19 @@ Sau khi bật, mỗi lần push lên nhánh này, trang sẽ tự cập nhật.
 
 ## Danh bạ email
 
-Sửa `docs/data/contacts.js`:
+Sửa `docs/data/contacts.js`, rồi tải lại trang. Danh bạ có bốn phần:
 
+- `contractors`: nhà thầu. `name` phải khớp đúng cột "Nhà Thầu" trong Excel.
+- `technicalTeams`: đội kỹ thuật (hộp thư nhóm), có `region`. Được CC khi gửi cho nhà thầu hoặc cửa hàng cùng miền.
+- `technicians`: nhân viên kỹ thuật (cá nhân), có `region`.
+- `stores`: email cửa hàng, key là mã cửa hàng.
 - `sender`: chữ ký cuối email.
-- `contractors`: key là tên nhà thầu đúng như cột "Nhà Thầu" trong Excel.
-- `stores`: key là mã cửa hàng.
-- `technicians`: key là miền. `default` dùng khi miền không có trong danh sách.
 
-Để trống email thì nút vẫn mở email, người gửi tự điền người nhận. Ứng dụng không có máy chủ nên không tự gửi được. Người dùng luôn bấm Gửi trong ứng dụng email của mình.
+Mỗi ô gửi email có hai ô chọn: **Nhóm nhận** và **Người nhận**. Hệ thống tự chọn sẵn người khớp với cửa hàng: nhà thầu theo tên, kỹ thuật theo miền, cửa hàng theo mã. Nếu không khớp, ô hiện "Chọn người nhận" để bạn tự chọn. Địa chỉ hiện ngay trong ô, có nút Sao chép.
+
+Để trống email thì vẫn chọn được người nhận, nhưng địa chỉ sẽ là "Chưa có email". Ứng dụng không có máy chủ nên không tự gửi. Người dùng bấm Mở email rồi bấm Gửi trong ứng dụng mail của mình.
+
+Nếu nút Mở email không hoạt động (ví dụ khi xem qua claude.ai), bấm Sao chép rồi dán địa chỉ vào ứng dụng mail.
 
 ## Hạn chế hiện tại
 

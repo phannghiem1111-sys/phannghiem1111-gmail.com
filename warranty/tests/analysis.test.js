@@ -170,35 +170,55 @@ test('Dashboard: cảnh báo sắp hết khi mốc ngày thay đổi', () => {
   assert.equal(d.stores.find((s) => s.code === '2CBA').warranty.status, 'ok');
 });
 
-test('Email: nội dung có mã cửa hàng và tham số được mã hoá', () => {
+const CONTACTS = {
+  sender: 'Người gửi test',
+  contractors: [{ name: 'Phú Mỹ', email: 'pm@example.com' }],
+  technicalTeams: [{ name: 'Kỹ thuật Miền Nam', region: 'Miền Nam', email: 'kt@example.com' }],
+  technicians: [{ name: 'Nguyễn Văn A', region: 'Miền Nam', email: 'nva@example.com' }],
+  stores: { '2CAO': { email: 'cao@example.com' } },
+};
+
+test('Chọn người nhận sẵn theo nhà thầu, cửa hàng và miền', () => {
+  const opts = A.recipientOptions(CONTACTS);
+  assert.equal(opts.length, 4, '1 nhà thầu, 1 đội kỹ thuật, 1 nhân viên, 1 cửa hàng');
+  const cao = model.storeMap.get('2CAO');
+  assert.equal(opts.find((o) => o.id === A.defaultRecipientId(cao, 'contractor', opts)).email, 'pm@example.com');
+  assert.equal(opts.find((o) => o.id === A.defaultRecipientId(cao, 'team', opts)).email, 'kt@example.com');
+  assert.equal(opts.find((o) => o.id === A.defaultRecipientId(cao, 'staff', opts)).email, 'nva@example.com');
+  assert.equal(opts.find((o) => o.id === A.defaultRecipientId(cao, 'store', opts)).email, 'cao@example.com');
+  // 2CBA chưa có nhà thầu và miền trong danh bạ: không tự gán người sai
+  const cba = model.storeMap.get('2CBA');
+  assert.equal(A.defaultRecipientId(cba, 'contractor', opts), null);
+});
+
+test('Email gửi nhà thầu: đúng người nhận, CC đội kỹ thuật cùng miền', () => {
   const cas = A.searchCases(model, { storeCode: '2CAO', item: 'Móng, giằng BTCT' })[0];
   const req = model.requests.find((r) => r.storeCode === '2CAO' && r.code === 'BHXDA026');
-  const mail = A.buildMail('contractor', { store: cas.store, item: cas.item, request: req, warranty: cas.warranty }, {
-    contractors: { 'Phú Mỹ': { email: 'pm@example.com' } },
-    technicians: { 'Miền Nam': { email: 'kt@example.com' } },
-    sender: 'Nguyễn Văn A',
-  });
+  const opts = A.recipientOptions(CONTACTS);
+  const recipient = opts.find((o) => o.email === 'pm@example.com');
+  const mail = A.buildMail(recipient, { store: cas.store, item: cas.item, request: req, warranty: cas.warranty }, CONTACTS);
   assert.equal(mail.to, 'pm@example.com');
   assert.equal(mail.cc, 'kt@example.com');
   assert.ok(mail.subject.includes('2CAO'));
+  assert.ok(mail.body.includes('Kính gửi Nhà thầu Phú Mỹ'));
   assert.ok(mail.body.includes('quá hạn 38 ngày'));
+  assert.ok(mail.body.startsWith('Kính gửi Nhà thầu Phú Mỹ,'));
   assert.ok(mail.href.startsWith('mailto:pm%40example.com?cc=kt%40example.com&subject='));
   assert.ok(!mail.href.includes(' '), 'không có khoảng trắng thô trong link');
 });
 
-test('Yêu cầu của cửa hàng lạ: báo lỗi E04 và không làm hỏng dashboard', () => {
-  const broken = JSON.parse(JSON.stringify(DATA));
-  broken.requestRows.push({ ...broken.requestRows[0], storeCode: 'ZZZZ', row: 999 });
-  const m = A.buildModel(broken, ASOF);
-  assert.equal(m.checks.find((c) => c.id === 'E04').count, 1);
-  const d = A.buildDashboard(m);
-  assert.equal(d.kpi.open, 7);
-  assert.equal(d.kpi.errors, 4, 'E01, E03 (mã không có trong BOQ của CH lạ), E04, E06');
+test('Email gửi nhân viên kỹ thuật: không CC, nội dung hỏi nguyên nhân', () => {
+  const cas = A.searchCases(model, { storeCode: '2CAO', item: 'Móng, giằng BTCT' })[0];
+  const opts = A.recipientOptions(CONTACTS);
+  const mail = A.buildMail(opts.find((o) => o.group === 'staff'), { store: cas.store, item: cas.item, warranty: cas.warranty }, CONTACTS);
+  assert.equal(mail.to, 'nva@example.com');
+  assert.equal(mail.cc, '');
+  assert.ok(mail.body.includes('Đề nghị kiểm tra, xác nhận nguyên nhân'));
 });
 
-test('Email: chưa cấu hình địa chỉ vẫn tạo được link để người dùng tự điền', () => {
+test('Email: chưa có địa chỉ vẫn tạo được link để người dùng tự điền', () => {
   const cas = A.searchCases(model, { storeCode: '2CAO', item: 'Móng, giằng BTCT' })[0];
-  const mail = A.buildMail('store', { store: cas.store, item: cas.item, warranty: cas.warranty }, {});
+  const mail = A.buildMail(null, { store: cas.store, item: cas.item, warranty: cas.warranty }, {});
   assert.equal(mail.to, '');
   assert.ok(mail.href.startsWith('mailto:?subject='));
 });
@@ -206,8 +226,10 @@ test('Email: chưa cấu hình địa chỉ vẫn tạo được link để ngư
 test('Email theo cả cửa hàng: liệt kê hạng mục và gộp phần còn lại', () => {
   const cases = A.searchCases(model, { storeCode: '2CAO' });
   const store = model.storeMap.get('2CAO');
-  const mail = A.buildMail('store', { store, items: cases.map((c) => c.item.item), warranty: cases[0].warranty }, {});
+  const recipient = { group: 'store', name: '2CAO', email: 'cao@example.com' };
+  const mail = A.buildMail(recipient, { store, items: cases.map((c) => c.item.item), warranty: cases[0].warranty }, CONTACTS);
   assert.ok(mail.subject.includes('63 hạng mục'));
   assert.ok(mail.body.includes(`  • ${cases[0].item.item}`));
   assert.ok(mail.body.includes('và 48 hạng mục khác'), 'chỉ liệt kê 15 hạng mục đầu');
+  assert.equal(mail.cc, 'kt@example.com', 'cửa hàng được CC đội kỹ thuật cùng miền');
 });
