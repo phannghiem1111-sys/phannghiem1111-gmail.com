@@ -139,6 +139,17 @@
     .cat-group[open] summary::after { transform: rotate(180deg); }
     .cat-group .rows { margin: 0 0 10px; border-top: 0; }
 
+    /* Bảng sự vụ có cột riêng, không dùng độ rộng của bảng yêu cầu Excel */
+    .req-table.tk-table th:nth-child(1) { width: 136px; }
+    .req-table.tk-table th:nth-child(2) { width: 190px; }
+    .req-table.tk-table th:nth-child(3) { width: auto; }
+    .req-table.tk-table th:nth-child(4) { width: 120px; }
+    .req-table.tk-table th:nth-child(5) { width: 190px; }
+    .req-table.tk-table th:nth-child(6) { width: 130px; }
+    .req-table.tk-table th:nth-child(7) { width: 90px; }
+    .tk-table td .code { white-space: nowrap; }
+    .kpis-tk { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 900px) { .kpis-tk { grid-template-columns: repeat(4, 1fr); } }
     /* Kiểm tra bảo hành và sự vụ */
     .ops { display: grid; gap: 14px; grid-template-columns: 1fr; margin-bottom: 14px; }
     .ops > .card { margin-bottom: 0; }
@@ -418,6 +429,7 @@
           </div>
         </div>
         <p id="tk-mode" class="muted small req-meta"></p>
+        <div id="tk-alerts"></div>
         <div id="tk-list" class="table-wrap"></div>
       </div>
 
@@ -426,6 +438,7 @@
       </section>
 
       <div id="kpis" class="kpis"></div>
+      <div id="kpis-tk" class="kpis kpis-tk" aria-label="Số liệu sự vụ"></div>
 
       <div class="grid2">
         <div id="warnings" class="card"></div>
@@ -439,12 +452,13 @@
 
       <div class="card">
         <div class="card-head">
-          <h2>Yêu cầu bảo hành</h2>
+          <h2>Yêu cầu từ file Excel</h2>
           <div class="seg" role="group" aria-label="Chọn nhóm yêu cầu">
             <button type="button" class="seg-btn is-active" data-req="open" aria-pressed="true">Đang xử lý <span id="open-count" class="count">0</span></button>
             <button type="button" class="seg-btn" data-req="closed" aria-pressed="false">Đã đóng <span id="closed-count" class="count">0</span></button>
           </div>
         </div>
+        <p class="muted small req-meta">Dữ liệu từ hồ sơ bảo hành (file Excel do P.XD cập nhật). Sự vụ tạo trên dashboard nằm ở mục Sự vụ phía trên.</p>
         <p id="req-meta" class="muted small req-meta"></p>
         <div id="req-wrap" class="table-wrap"></div>
       </div>

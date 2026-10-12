@@ -507,11 +507,46 @@
     });
   }
 
+  /** Bốn ô số liệu sự vụ, đặt ngay dưới dòng KPI của yêu cầu từ Excel. */
+  function renderTicketKpis(all) {
+    const sum = D.T.summarize(all);
+    const tiles = [
+      ['Sự vụ đã tạo', sum.total, 'tạo trên dashboard', 'neutral'],
+      ['Sự vụ đang mở', sum.open, `${sum.closed} đã đóng`, sum.open ? 'warn' : 'ok'],
+      ['Sự vụ quá hạn', sum.overdue, 'cần nhà thầu phản hồi', sum.overdue ? 'err' : 'ok'],
+      ['Đã đóng', sum.closed, 'đã xử lý xong', 'ok'],
+    ];
+    el('kpis-tk').innerHTML = tiles
+      .map(([label, value, sub, tone]) => `<div class="kpi kpi-${tone}"><div class="kpi-value">${value}</div><div class="kpi-label">${esc(label)}</div><div class="kpi-sub">${esc(sub)}</div></div>`)
+      .join('');
+  }
+
+  /** Cảnh báo: các sự vụ đang quá hạn, lâu nhất lên đầu, có nút mở chi tiết. */
+  function renderAlerts(all) {
+    const late = D.T.filterViews(all, 'overdue').sort((a, b) => b.overdueDays - a.overdueDays);
+    const box = el('tk-alerts');
+    if (!late.length) {
+      box.innerHTML = all.some((v) => v.open)
+        ? '<ul class="lines"><li class="ok-line"><span>Không có sự vụ nào quá hạn phản hồi.</span></li></ul>'
+        : '';
+      return;
+    }
+    box.innerHTML = `<ul class="lines">${late
+      .slice(0, 5)
+      .map(
+        (v) => `<li class="err-line"><span><strong>${esc(v.id)}</strong> · ${esc(v.storeCode)} · ${esc(v.item)}: quá hạn ${v.overdueDays} ngày, nhà thầu ${esc(v.contractor || '—')}.</span><button type="button" class="btn btn-ghost btn-sm" data-tk="${esc(v.id)}">Xem</button></li>`
+      )
+      .join('')}${late.length > 5 ? `<li class="muted small">Còn ${late.length - 5} sự vụ quá hạn khác. Lọc theo "Quá hạn" để xem.</li>` : ''}</ul>`;
+  }
+
   /** Gọi từ app.js khi dữ liệu kiểm tra thay đổi (đổi ngày tính). */
   function refresh() {
     if (!D || !D.getModel()) return;
     renderCheck();
     renderTicketFormOptions();
+    const all = views();
+    renderTicketKpis(all);
+    renderAlerts(all);
     renderTickets();
     renderDetail();
   }
