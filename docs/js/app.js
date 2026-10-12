@@ -12,6 +12,8 @@
     category: '',
     item: '',
     reason: '',
+    reqTab: 'open',
+    dash: null,
     model: null,
   };
 
@@ -46,13 +48,13 @@
   }
 
   /** Nút gửi email cho nhà thầu, cửa hàng, kỹ thuật. Link mailto có sẵn nội dung, người gửi bấm Gửi. */
-  function mailButtons(ctx) {
+  function mailButtons(ctx, extra = '') {
     const labels = { contractor: 'Mail nhà thầu', store: 'Mail cửa hàng', technician: 'Mail kỹ thuật' };
     return Object.keys(labels)
       .map((kind) => {
         const m = A.buildMail(kind, { ...ctx, asOf: state.asOf }, CONTACTS);
         const title = m.to ? `Gửi tới ${m.to}` : 'Chưa có email trong danh bạ, sẽ tự điền người nhận';
-        return `<a class="btn btn-mail" href="${esc(m.href)}" title="${esc(title)}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>${labels[kind]}</a>`;
+        return `<a class="btn btn-mail ${extra}" href="${esc(m.href)}" title="${esc(title)}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>${labels[kind]}</a>`;
       })
       .join('');
   }
@@ -299,37 +301,44 @@
     $('#store-list').innerHTML = rows;
   }
 
-  function requestCard(r, model) {
-    const ctx = requestContext(model, r);
-    const status = r.isOpen
-      ? `<div class="req-status">${esc(r.statusText || 'Chưa có trạng thái')}</div>`
-      : `<div class="req-status">${esc(r.statusText || '')}</div>`;
-    const response = r.response ? `<div class="req-response"><span class="muted small">Phản hồi:</span> ${esc(r.response)}</div>` : '';
+  function requestRow(r, model) {
+    const detail = r.detail && r.detail !== r.reasonText ? r.detail : '';
     return `
-      <article class="req">
-        <div class="req-head"><span class="code">${esc(r.storeCode)}</span>${requestBadge(r)}</div>
-        <div class="req-title">${esc(r.reasonText || r.detail || 'Yêu cầu bảo hành')}</div>
-        ${r.detail && r.detail !== r.reasonText ? `<div class="muted small">${esc(r.detail)}</div>` : ''}
-        <dl class="mini">
-          <div><dt>Ngày gửi</dt><dd>${fmt(r.sentDate)}</dd></div>
-          <div><dt>Hạn phản hồi</dt><dd>${fmt(r.deadline)}</dd></div>
-          <div><dt>Mã đầu việc</dt><dd>${esc(r.code || '—')}</dd></div>
-          <div><dt>QLDA</dt><dd>${esc(r.pic || '—')}</dd></div>
-        </dl>
-        ${status}${response}
-        <div class="actions">${mailButtons(ctx)}</div>
-      </article>`;
+      <tr>
+        <td data-label="Cửa hàng"><span class="code">${esc(r.storeCode)}</span></td>
+        <td data-label="Nội dung"><div class="cell-title">${esc(r.reasonText || r.detail || 'Yêu cầu bảo hành')}</div>${detail ? `<div class="muted small">${esc(detail)}</div>` : ''}</td>
+        <td data-label="Mã BH">${esc(r.code || '—')}</td>
+        <td data-label="Gửi → hạn" class="nowrap">${fmt(r.sentDate)} → ${fmt(r.deadline)}</td>
+        <td data-label="Trạng thái">${requestBadge(r)}${r.statusText ? `<div class="muted small">${esc(r.statusText)}</div>` : ''}</td>
+        <td data-label="Phản hồi gần nhất">${esc(r.response || '—')}</td>
+        <td data-label="Gửi email"><div class="mail-cell">${mailButtons(requestContext(model, r), 'btn-sm')}</div></td>
+      </tr>`;
   }
 
-  function renderRequests(d) {
+  /** Bảng yêu cầu, chuyển giữa đang xử lý và đã đóng. Trên điện thoại mỗi dòng thành một thẻ có nhãn. */
+  function renderRequests() {
+    const d = state.dash;
+    const isOpen = state.reqTab === 'open';
+    const list = isOpen ? d.open : d.closed;
+    document.querySelectorAll('[data-req]').forEach((b) => {
+      const on = b.dataset.req === state.reqTab;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
     $('#open-count').textContent = d.open.length;
     $('#closed-count').textContent = d.closed.length;
-    $('#open-list').innerHTML = d.open.length
-      ? d.open.map((r) => requestCard(r, state.model)).join('')
-      : '<p class="empty">Không có yêu cầu nào đang mở.</p>';
-    $('#closed-list').innerHTML = d.closed.length
-      ? d.closed.map((r) => requestCard(r, state.model)).join('')
-      : '<p class="empty">Chưa có yêu cầu nào đã xử lý.</p>';
+    $('#req-meta').textContent = isOpen
+      ? 'Sắp xếp: quá hạn lâu nhất lên đầu.'
+      : 'Sắp xếp: yêu cầu gửi gần nhất lên đầu.';
+    $('#req-wrap').innerHTML = list.length
+      ? `<table class="req-table">
+          <thead><tr>
+            <th>Cửa hàng</th><th>Nội dung</th><th>Mã BH</th><th>Gửi → hạn</th>
+            <th>Trạng thái</th><th>Phản hồi gần nhất</th><th>Gửi email</th>
+          </tr></thead>
+          <tbody>${list.map((r) => requestRow(r, state.model)).join('')}</tbody>
+        </table>`
+      : `<p class="empty">${isOpen ? 'Không có yêu cầu nào đang mở.' : 'Chưa có yêu cầu nào đã đóng.'}</p>`;
   }
 
   function renderCategories(d) {
@@ -384,7 +393,8 @@
     renderKpis(d.kpi);
     renderWarnings(d);
     renderStores(d);
-    renderRequests(d);
+    state.dash = d;
+    renderRequests();
     renderCategories(d);
     renderChecks(d);
   }
@@ -454,6 +464,13 @@
       $('#f-store').value = '';
       renderLookup();
     });
+
+    document.querySelectorAll('[data-req]').forEach((b) =>
+      b.addEventListener('click', () => {
+        state.reqTab = b.dataset.req;
+        renderRequests();
+      })
+    );
 
     $('#asof').addEventListener('change', (e) => {
       if (!e.target.value) return;
