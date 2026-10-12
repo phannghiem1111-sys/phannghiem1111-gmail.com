@@ -153,22 +153,36 @@
       </section>`;
   }
 
-  /** Một thẻ cho mỗi cửa hàng: thông tin và nút gửi email một lần, các hạng mục hiển thị dạng dòng gọn. */
+  /** Một thẻ cho mỗi cửa hàng: thông tin và nút gửi email một lần, hạng mục gom theo nhóm có thể mở ra. */
   function storeGroupCard(store, cases) {
     const warranty = A.warrantyInfo(store.handover, store.warrantyEnd, state.asOf);
     const openReqs = state.model.requests.filter((r) => r.storeCode === store.code && r.isOpen);
-    const rows = cases
-      .map((c) => {
-        const open = c.requests.filter((r) => r.isOpen).map((r) => requestBadge(r)).join('');
-        return `
-          <li class="row">
-            <div class="row-main">
-              <span class="row-item">${esc(c.item.item)}</span>
-              <span class="row-meta">${esc(c.item.category)}${c.item.reason ? ' · ' + esc(c.item.reason) : ''}</span>
-            </div>
-            <div class="row-side"><span class="row-code">${esc(c.item.code || '—')}</span>${open}</div>
-          </li>`;
-      })
+    const groups = new Map();
+    for (const c of cases) {
+      if (!groups.has(c.item.category)) groups.set(c.item.category, []);
+      groups.get(c.item.category).push(c);
+    }
+    // Chỉ có một nhóm thì mở sẵn, nhiều nhóm thì thu gọn để trang ngắn
+    const openByDefault = groups.size === 1 ? ' open' : '';
+    const row = (c) => {
+      const open = c.requests.filter((r) => r.isOpen).map((r) => requestBadge(r)).join('');
+      return `
+        <li class="row">
+          <div class="row-main">
+            <span class="row-item">${esc(c.item.item)}</span>
+            ${c.item.reason ? `<span class="row-meta">${esc(c.item.reason)}</span>` : ''}
+          </div>
+          <div class="row-side"><span class="row-code">${esc(c.item.code || '—')}</span>${open}</div>
+        </li>`;
+    };
+    const body = [...groups.entries()]
+      .map(
+        ([category, list]) => `
+          <details class="cat-group"${openByDefault}>
+            <summary><span class="cat-name">${esc(category)}</span><span class="cat-count">${list.length} hạng mục</span></summary>
+            <ul class="rows">${list.map(row).join('')}</ul>
+          </details>`
+      )
       .join('');
     return `
       <article class="case-group">
@@ -176,8 +190,8 @@
           <div class="store-id"><span class="code">${esc(store.code)}</span><span class="sname">${esc(store.storeName || '')}</span></div>
           ${warrantyBadge(warranty)}
         </header>
-        <p class="muted small">${esc(store.region || 'Chưa có miền')} · ${esc(store.contractor || 'Chưa có nhà thầu')} · ${cases.length} hạng mục · ${openReqs.length} yêu cầu đang mở</p>
-        <ul class="rows">${rows}</ul>
+        <p class="muted small">${esc(store.region || 'Chưa có miền')} · ${esc(store.contractor || 'Chưa có nhà thầu')} · ${cases.length} hạng mục trong ${groups.size} nhóm · ${openReqs.length} yêu cầu đang mở</p>
+        ${body}
         <div class="actions">${mailButtons({
           store,
           item: null,

@@ -124,6 +124,17 @@
     .reqline { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
     .reqline span { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
+    /* Hạng mục gom theo nhóm trong một cửa hàng */
+    .cat-group { border-bottom: 1px solid var(--line); }
+    .cat-group:last-of-type { border-bottom: 0; }
+    .cat-group summary { display: flex; align-items: center; gap: 10px; padding: 11px 0; cursor: pointer; list-style: none; font-size: 14px; }
+    .cat-group summary::-webkit-details-marker { display: none; }
+    .cat-name { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
+    .cat-count { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--gray); background: var(--gray-bg); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+    .cat-group summary::after { content: "\25BE"; color: var(--muted); transition: transform .15s; }
+    .cat-group[open] summary::after { transform: rotate(180deg); }
+    .cat-group .rows { margin: 0 0 10px; border-top: 0; }
+
     /* Yêu cầu bảo hành: bảng gọn, trên điện thoại mỗi dòng thành thẻ có nhãn */
     .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px; }
     .card-head h2 { margin: 0; }
