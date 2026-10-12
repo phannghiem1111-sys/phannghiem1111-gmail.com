@@ -4,8 +4,9 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 
 globalThis.window = globalThis;
-require(path.join(__dirname, '..', 'data', 'warranty-data.js'));
-const A = require(path.join(__dirname, '..', 'js', 'analysis.js'));
+const APP = path.join(__dirname, '..', '..', 'docs');
+require(path.join(APP, 'data', 'warranty-data.js'));
+const A = require(path.join(APP, 'js', 'analysis.js'));
 
 const DATA = globalThis.WARRANTY_DATA;
 const ASOF = '2026-10-12';

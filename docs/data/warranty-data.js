@@ -2,7 +2,7 @@
 window.WARRANTY_DATA = {
  "meta": {
   "sourceFile": "Ho_So_Bao_Hanh_XD-ME_Final_Cap_Nhat_05.10.xlsx",
-  "generatedAt": "2026-10-12T10:51:07",
+  "generatedAt": "2026-10-12T11:10:57",
   "sheets": [
    {
     "name": "Request BH (Kỹ thuật)",

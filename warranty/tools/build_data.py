@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Đọc file hồ sơ bảo hành (.xlsx) và xuất warranty/data/warranty-data.js.
+"""Đọc file hồ sơ bảo hành (.xlsx) và xuất docs/data/warranty-data.js.
 
 Cách dùng (chạy từ thư mục gốc của repo):
     python3 warranty/tools/build_data.py                    # lấy file .xlsx mới nhất trong warranty/source/
@@ -7,7 +7,7 @@ Cách dùng (chạy từ thư mục gốc của repo):
 
 Script chỉ đọc và chuẩn hoá dữ liệu. Sheet được nhận diện theo nội dung tiêu đề
 (không theo tên sheet), nên vẫn chạy được khi P.XD đổi tên hoặc ẩn/hiện sheet.
-Logic cảnh báo và kiểm tra nghiệp vụ nằm trong warranty/js/analysis.js, để dashboard
+Logic cảnh báo và kiểm tra nghiệp vụ nằm trong docs/js/analysis.js, để dashboard
 luôn tính lại theo ngày hiện tại khi mở.
 """
 from __future__ import annotations
@@ -21,9 +21,11 @@ import sys
 
 import openpyxl
 
-WARRANTY_DIR = pathlib.Path(__file__).resolve().parents[1]
+REPO_DIR = pathlib.Path(__file__).resolve().parents[2]
+WARRANTY_DIR = REPO_DIR / "warranty"
 SOURCE_DIR = WARRANTY_DIR / "source"
-OUTPUT = WARRANTY_DIR / "data" / "warranty-data.js"
+# docs/ là thư mục GitHub Pages publish. Chỉ đặt file app ở đây, không đặt file Excel.
+OUTPUT = REPO_DIR / "docs" / "data" / "warranty-data.js"
 
 # Mỗi cột được gán cho trường đầu tiên khớp (tiêu đề đã chuẩn hoá: chữ thường, 1 dấu cách).
 BOQ_COLUMNS = [

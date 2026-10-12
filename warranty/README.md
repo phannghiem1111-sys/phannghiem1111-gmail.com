@@ -8,23 +8,26 @@
 
 ## Mở ứng dụng
 
-- Mở trực tiếp `warranty/index.html` bằng trình duyệt, kể cả trên điện thoại.
-- Hoặc đưa thư mục `warranty/` lên nơi lưu trữ tĩnh (GitHub Pages, SharePoint, file server nội bộ).
+- Mở trực tiếp `docs/index.html` bằng trình duyệt, kể cả trên điện thoại.
+- Hoặc xem trên web tại `https://nso.wcm.vn` sau khi bật GitHub Pages và gắn tên miền (xem phần Triển khai).
 
 Trang dùng font Inter và Font Awesome từ CDN. Không có mạng thì trang vẫn chạy, chỉ mất icon và font.
 
 ## Cấu trúc
 
+Thư mục `docs/` là toàn bộ app, GitHub Pages publish từ đây. Thư mục `warranty/` chứa file Excel, script và test, không được publish.
+
 | File | Vai trò |
 |---|---|
-| `index.html` | Giao diện (tab Tra cứu và Dashboard), CSS nằm trong file |
-| `js/analysis.js` | Lõi phân tích: tính ngày còn lại, trạng thái yêu cầu, xác nhận, kiểm tra dữ liệu, tạo email |
-| `js/app.js` | Điều khiển giao diện, không chứa logic nghiệp vụ |
-| `data/warranty-data.js` | Dữ liệu đã chuyển từ Excel. **Tự sinh, không sửa tay** |
-| `data/contacts.js` | Danh bạ email nhà thầu, cửa hàng, kỹ thuật. **Sửa tay ở đây** |
-| `tools/build_data.py` | Đọc file Excel và sinh `data/warranty-data.js` |
-| `source/` | File Excel gốc đang dùng |
-| `tests/analysis.test.js` | Kiểm thử lõi phân tích trên dữ liệu thật |
+| `docs/index.html` | Giao diện (tab Tra cứu và Dashboard), CSS nằm trong file |
+| `docs/js/analysis.js` | Lõi phân tích: tính ngày còn lại, trạng thái yêu cầu, xác nhận, kiểm tra dữ liệu, tạo email |
+| `docs/js/app.js` | Điều khiển giao diện, không chứa logic nghiệp vụ |
+| `docs/data/warranty-data.js` | Dữ liệu đã chuyển từ Excel. **Tự sinh, không sửa tay** |
+| `docs/data/contacts.js` | Danh bạ email nhà thầu, cửa hàng, kỹ thuật. **Sửa tay ở đây** |
+| `docs/CNAME` | Tên miền gắn cho GitHub Pages (`nso.wcm.vn`) |
+| `warranty/tools/build_data.py` | Đọc file Excel và sinh `docs/data/warranty-data.js` |
+| `warranty/source/` | File Excel gốc đang dùng |
+| `warranty/tests/analysis.test.js` | Kiểm thử lõi phân tích trên dữ liệu thật |
 
 ## Cập nhật khi có file Excel mới (hằng tuần)
 
@@ -43,7 +46,7 @@ Script không phụ thuộc tên sheet. Nó nhận diện sheet theo tiêu đề
 
 ## Quy tắc nghiệp vụ
 
-Ngưỡng và quy tắc nằm ở đầu `js/analysis.js` (`CONFIG`) và trong hàm `classifyStatus`.
+Ngưỡng và quy tắc nằm ở đầu `docs/js/analysis.js` (`CONFIG`) và trong hàm `classifyStatus`.
 
 **Bảo hành.** Còn bảo hành khi ngày hiện tại ≤ "Ngày hết BH". Còn ≤ 90 ngày là *sắp hết*, còn ≤ 30 ngày là *khẩn*. Ngày tính theo máy đang mở trang. Ô "Tính đến ngày" trên dashboard cho phép xem trước tình trạng vào một ngày khác.
 
@@ -83,9 +86,22 @@ Ngưỡng và quy tắc nằm ở đầu `js/analysis.js` (`CONFIG`) và trong h
 | I02 | Ghi chú | Hạng mục chưa có PIC hoặc trạng thái |
 | I03 | Ghi chú | Hạng mục chưa có nội dung hư hỏng |
 
+## Triển khai lên nso.wcm.vn
+
+1. **Bật GitHub Pages:** repo → Settings → Pages → Source chọn *Deploy from a branch*, Branch chọn `claude/warranty-store-analysis-cvqf4v`, thư mục chọn `/docs`, bấm Save.
+2. **Gắn tên miền:** trong cùng trang Pages, ô *Custom domain* nhập `nso.wcm.vn`, bấm Save. File `docs/CNAME` đã có sẵn nội dung này.
+3. **Tạo bản ghi DNS** trên `wcm.vn` (người quản lý DNS của công ty làm):
+   - Loại: `CNAME`
+   - Tên: `nso`
+   - Giá trị: `phannghiem1111-sys.github.io`
+4. Chờ DNS cập nhật (thường vài phút đến vài giờ). Khi trang Pages báo DNS đã đúng, tick *Enforce HTTPS* để bật HTTPS.
+5. Mở `https://nso.wcm.vn` để kiểm tra.
+
+Sau khi bật, mỗi lần push lên nhánh này, trang sẽ tự cập nhật.
+
 ## Danh bạ email
 
-Sửa `data/contacts.js`:
+Sửa `docs/data/contacts.js`:
 
 - `sender`: chữ ký cuối email.
 - `contractors`: key là tên nhà thầu đúng như cột "Nhà Thầu" trong Excel.
@@ -96,7 +112,8 @@ Sửa `data/contacts.js`:
 
 ## Hạn chế hiện tại
 
-- **Không có đăng nhập.** Ai có đường link trang đều xem được dữ liệu. Nếu dữ liệu nhạy cảm, đặt thư mục trên nơi có kiểm soát truy cập (SharePoint nội bộ, server có xác thực).
+- **Không có đăng nhập.** Ai có đường link `nso.wcm.vn` đều xem được dữ liệu, kể cả khi không thuộc công ty. Dữ liệu có tên nhà thầu và thông tin cửa hàng nên chỉ nên đưa lên đây nếu chấp nhận điều đó. Muốn chặn truy cập ngoài công ty, cần hosting có xác thực (SharePoint nội bộ, server nội bộ).
+- **Repo phải là public** để GitHub Pages miễn phí. Nếu repo private, cần gói GitHub hỗ trợ Pages cho private repo.
 - **Dữ liệu tĩnh.** Mỗi lần Excel đổi phải chạy lại `build_data.py`. Có thể làm bước nạp Excel trực tiếp trên trình duyệt nếu cần.
 - **Sheet BOQ không có cột khối lượng, PIC và trạng thái** (xem I01, I02). Nên bổ sung để dashboard theo dõi được tiến độ từng hạng mục.
 - **Cửa hàng 2CBA hiện chỉ có BOQ ẩn.** Sheet này chưa có nhà thầu, miền, và mã đầu việc chưa đối soát được với master, nên xuất hiện ở mục lỗi E06 và cảnh báo W03/W04. Đây là việc cần làm ở nguồn dữ liệu, không phải lỗi của ứng dụng.
