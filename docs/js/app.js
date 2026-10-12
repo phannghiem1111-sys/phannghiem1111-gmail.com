@@ -5,7 +5,6 @@
   const A = window.WarrantyAnalysis;
   const DATA = window.WARRANTY_DATA;
   const CONTACTS = window.WARRANTY_CONTACTS || {};
-  const PAGE = 20;
 
   const state = {
     asOf: A.todayIso(),
@@ -13,7 +12,6 @@
     category: '',
     item: '',
     reason: '',
-    limit: PAGE,
     model: null,
   };
 
@@ -153,48 +151,61 @@
       </section>`;
   }
 
-  function caseCard(c) {
-    const first = c.requests.find((r) => r.isOpen) || null;
-    const reqLine = c.requests.length
-      ? `<div class="reqline">${c.requests
-          .map((r) => `<span>Yêu cầu ${esc(r.code)}: ${esc(r.statusText || 'chưa có trạng thái')} ${requestBadge(r)}</span>`)
-          .join('')}</div>`
-      : '';
+  /** Một thẻ cho mỗi cửa hàng: thông tin và nút gửi email một lần, các hạng mục hiển thị dạng dòng gọn. */
+  function storeGroupCard(store, cases) {
+    const warranty = A.warrantyInfo(store.handover, store.warrantyEnd, state.asOf);
+    const openReqs = state.model.requests.filter((r) => r.storeCode === store.code && r.isOpen);
+    const rows = cases
+      .map((c) => {
+        const open = c.requests.filter((r) => r.isOpen).map((r) => requestBadge(r)).join('');
+        return `
+          <li class="row">
+            <div class="row-main">
+              <span class="row-item">${esc(c.item.item)}</span>
+              <span class="row-meta">${esc(c.item.category)}${c.item.reason ? ' · ' + esc(c.item.reason) : ''}</span>
+            </div>
+            <div class="row-side"><span class="row-code">${esc(c.item.code || '—')}</span>${open}</div>
+          </li>`;
+      })
+      .join('');
     return `
-      <article class="case">
+      <article class="case-group">
         <header class="case-head">
-          <div class="store-id"><span class="code">${esc(c.store.code)}</span><span class="sname">${esc(c.store.storeName || '')}</span></div>
-          ${warrantyBadge(c.warranty)}
+          <div class="store-id"><span class="code">${esc(store.code)}</span><span class="sname">${esc(store.storeName || '')}</span></div>
+          ${warrantyBadge(warranty)}
         </header>
-        <dl class="facts">
-          <div class="wide"><dt>Hạng mục</dt><dd>${esc(c.item.item)}</dd></div>
-          <div><dt>Nhóm</dt><dd>${esc(c.item.category)}</dd></div>
-          <div><dt>Mã đầu việc</dt><dd>${esc(c.item.code || '—')}</dd></div>
-          <div class="wide"><dt>Nội dung hư hỏng</dt><dd>${esc(c.item.reason || 'Chưa có (cần đối soát)')}</dd></div>
-          <div><dt>Nhà thầu</dt><dd>${esc(c.store.contractor || '—')}</dd></div>
-          <div><dt>Miền · Hết BH</dt><dd>${esc(c.store.region || '—')} · ${fmt(c.store.warrantyEnd)}</dd></div>
-        </dl>
-        ${reqLine}
-        <div class="actions">${mailButtons({ store: c.store, item: c.item, request: first, warranty: c.warranty })}</div>
+        <p class="muted small">${esc(store.region || 'Chưa có miền')} · ${esc(store.contractor || 'Chưa có nhà thầu')} · ${cases.length} hạng mục · ${openReqs.length} yêu cầu đang mở</p>
+        <ul class="rows">${rows}</ul>
+        <div class="actions">${mailButtons({
+          store,
+          item: null,
+          items: cases.map((c) => c.item.item),
+          request: openReqs[0] || null,
+          warranty,
+        })}</div>
       </article>`;
   }
 
   function renderResults() {
     const el = $('#results');
     const count = $('#result-count');
-    const more = $('#btn-more');
     if (!hasFilter()) {
       count.textContent = '';
       el.innerHTML = '<p class="empty">Chọn cửa hàng, nhóm, hạng mục hoặc nội dung hư hỏng để tra cứu. Có thể chọn bất kỳ tiêu chí nào.</p>';
-      more.hidden = true;
       return;
     }
     const cases = A.searchCases(state.model, state);
     count.textContent = `${cases.length} hạng mục khớp điều kiện`;
-    el.innerHTML = cases.length
-      ? cases.slice(0, state.limit).map(caseCard).join('')
-      : '<p class="empty">Không có hạng mục nào khớp. Thử bỏ bớt một tiêu chí.</p>';
-    more.hidden = cases.length <= state.limit;
+    if (!cases.length) {
+      el.innerHTML = '<p class="empty">Không có hạng mục nào khớp. Thử bỏ bớt một tiêu chí.</p>';
+      return;
+    }
+    const groups = new Map();
+    for (const c of cases) {
+      if (!groups.has(c.store.code)) groups.set(c.store.code, { store: c.store, cases: [] });
+      groups.get(c.store.code).cases.push(c);
+    }
+    el.innerHTML = [...groups.values()].map((g) => storeGroupCard(g.store, g.cases)).join('');
   }
 
   /** Gợi ý nội dung hư hỏng theo master của hạng mục đang chọn, bấm một lần để áp dụng. */
@@ -407,7 +418,6 @@
       if (!btn) return;
       state.storeCode = btn.dataset.store;
       $('#f-store').value = state.storeCode;
-      state.limit = PAGE;
       renderLookup();
     });
 
@@ -415,7 +425,6 @@
       const v = e.target.value.trim().toUpperCase();
       const s = state.model.stores.find((x) => x.code.toUpperCase() === v);
       state.storeCode = s ? s.code : '';
-      state.limit = PAGE;
       renderLookup();
     });
 
@@ -423,35 +432,27 @@
       state.category = e.target.value;
       state.item = '';
       state.reason = '';
-      state.limit = PAGE;
       renderLookup();
     });
     $('#f-item').addEventListener('change', (e) => {
       state.item = e.target.value;
-      state.limit = PAGE;
       renderLookup();
     });
     $('#f-reason').addEventListener('change', (e) => {
       state.reason = e.target.value;
-      state.limit = PAGE;
       renderLookup();
     });
     $('#reason-hint').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-use-reason]');
       if (!btn) return;
       state.reason = btn.dataset.useReason;
-      state.limit = PAGE;
       renderLookup();
     });
 
     $('#btn-clear').addEventListener('click', () => {
-      Object.assign(state, { storeCode: '', category: '', item: '', reason: '', limit: PAGE });
+      Object.assign(state, { storeCode: '', category: '', item: '', reason: '' });
       $('#f-store').value = '';
       renderLookup();
-    });
-    $('#btn-more').addEventListener('click', () => {
-      state.limit += PAGE;
-      renderResults();
     });
 
     $('#asof').addEventListener('change', (e) => {

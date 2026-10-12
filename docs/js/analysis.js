@@ -487,9 +487,20 @@
    */
   function buildMail(kind, ctx, contacts = {}) {
     const { store, item, request } = ctx;
+    const names = ctx.items || [];
     const warranty = ctx.warranty || warrantyInfo(store.handover, store.warrantyEnd, ctx.asOf || todayIso());
     const reason = (request && request.reasonText) || (item && item.reason) || '';
-    const itemName = item ? item.item : request?.detail || '(chưa chọn hạng mục)';
+    const itemName = item
+      ? item.item
+      : request?.detail || (names.length ? `${names.length} hạng mục` : '(chưa chọn hạng mục)');
+    // Gửi theo cả cửa hàng: liệt kê tối đa 15 hạng mục để nội dung email không quá dài
+    const listLines =
+      !item && names.length
+        ? [
+            ...names.slice(0, 15).map((n) => `  • ${n}`),
+            ...(names.length > 15 ? [`  • và ${names.length - 15} hạng mục khác`] : []),
+          ]
+        : [];
     const techEmail =
       (contacts.technicians && contacts.technicians[store.region]?.email) ||
       (contacts.technicians && contacts.technicians.default?.email) ||
@@ -533,6 +544,7 @@
       `- Miền: ${store.region || '—'}`,
       `- Nhà thầu: ${store.contractor || '—'}`,
       `- Hạng mục (BOQ): ${itemName}`,
+      ...listLines,
       `- Mã đầu việc BH: ${item?.code || '—'}`,
       `- Nội dung hư hỏng: ${reason || '—'}`,
       `- Thời hạn bảo hành: ${warrantyLine}`,

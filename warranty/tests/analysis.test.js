@@ -202,3 +202,12 @@ test('Email: chưa cấu hình địa chỉ vẫn tạo được link để ngư
   assert.equal(mail.to, '');
   assert.ok(mail.href.startsWith('mailto:?subject='));
 });
+
+test('Email theo cả cửa hàng: liệt kê hạng mục và gộp phần còn lại', () => {
+  const cases = A.searchCases(model, { storeCode: '2CAO' });
+  const store = model.storeMap.get('2CAO');
+  const mail = A.buildMail('store', { store, items: cases.map((c) => c.item.item), warranty: cases[0].warranty }, {});
+  assert.ok(mail.subject.includes('63 hạng mục'));
+  assert.ok(mail.body.includes(`  • ${cases[0].item.item}`));
+  assert.ok(mail.body.includes('và 48 hạng mục khác'), 'chỉ liệt kê 15 hạng mục đầu');
+});
