@@ -22,7 +22,29 @@
     return { tickets: [], events: [] };
   }
 
+  /** Bộ nhớ tạm khi trình duyệt chặn localStorage: vẫn dùng được trong phiên mở trang. */
+  function memoryStorage() {
+    const data = {};
+    return {
+      getItem: (k) => (k in data ? data[k] : null),
+      setItem: (k, v) => {
+        data[k] = String(v);
+      },
+    };
+  }
+
+  /** Đọc window.localStorage có thể ném lỗi (iframe sandbox, chặn cookie), nên phải bọc lại. */
+  function safeLocalStorage() {
+    try {
+      const s = GLOBAL.localStorage;
+      return s && typeof s.getItem === 'function' ? s : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function localStore(storage) {
+    storage = storage || memoryStorage();
     const read = () => {
       try {
         const parsed = JSON.parse(storage.getItem(LOCAL_KEY));
@@ -41,6 +63,12 @@
     };
     const listeners = new Set();
     const emit = () => listeners.forEach((fn) => fn(read()));
+    // Tab khác của cùng trình duyệt lưu sự vụ: cập nhật luôn tab này (dashboard đang mở chẳng hạn)
+    if (typeof GLOBAL.addEventListener === 'function') {
+      GLOBAL.addEventListener('storage', (e) => {
+        if (e.key === LOCAL_KEY || e.key === null) emit();
+      });
+    }
     return {
       mode: 'local',
       subscribe(fn) {
@@ -71,7 +99,7 @@
     let state = emptyState();
     let loadError = null;
     const listeners = new Set();
-    const emit = () => listeners.forEach((fn) => fn(state));
+    const emit = () => listeners.forEach((fn) => fn({ ...state, error: loadError }));
     const toRows = (snap) => snap.docs.filter((d) => d.exists).map((d) => d.data()).filter(Boolean);
 
     db.collection(TICKETS).onSnapshot(
@@ -115,7 +143,7 @@
    * Chọn chế độ lưu. claude.use("db") trả null khi không được cấp quyền, khi đó dùng bộ nhớ trình duyệt.
    * Trả về Promise, không bao giờ ném lỗi.
    */
-  async function openStore({ claude = GLOBAL.claude, storage = GLOBAL.localStorage } = {}) {
+  async function openStore({ claude = GLOBAL.claude, storage = safeLocalStorage() } = {}) {
     try {
       if (claude && typeof claude.use === 'function') {
         const db = await claude.use('db');
@@ -127,5 +155,5 @@
     return localStore(storage);
   }
 
-  return { openStore, localStore, sharedStore, TICKETS, EVENTS };
+  return { openStore, localStore, sharedStore, safeLocalStorage, TICKETS, EVENTS };
 });
