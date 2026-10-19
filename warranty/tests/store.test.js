@@ -60,3 +60,30 @@ test('Chế độ shared: ghi và đọc qua db, đăng ký đúng hai collectio
   assert.equal(latest.tickets[0].id, 'SV-2610-BBBB');
   assert.equal(latest.events[0].id, 'EV2');
 });
+
+test('Chế độ local: không có localStorage vẫn lưu được trong phiên', async () => {
+  const store = await S.openStore({ claude: null, storage: null });
+  assert.equal(store.mode, 'local');
+  let latest = null;
+  store.subscribe((st) => { latest = st; });
+  await store.createTicket({ id: 'SV-2610-CCCC', storeCode: '2CAO' });
+  assert.equal(latest.tickets.length, 1);
+});
+
+test('Chế độ local: tab khác lưu sự vụ thì tab này nhận dữ liệu mới', async () => {
+  const handlers = [];
+  const orig = globalThis.addEventListener;
+  globalThis.addEventListener = (type, fn) => { if (type === 'storage') handlers.push(fn); };
+  try {
+    const shared = memoryStorage();
+    const here = S.localStore(shared);
+    let latest = null;
+    here.subscribe((st) => { latest = st; });
+    // Mô phỏng tab khác ghi thẳng vào cùng bộ nhớ trình duyệt
+    shared.setItem('wcm-warranty-tickets-v1', JSON.stringify({ tickets: [{ id: 'SV-2610-DDDD' }], events: [] }));
+    handlers.forEach((fn) => fn({ key: 'wcm-warranty-tickets-v1' }));
+    assert.equal(latest.tickets[0].id, 'SV-2610-DDDD');
+  } finally {
+    globalThis.addEventListener = orig;
+  }
+});

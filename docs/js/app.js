@@ -1,4 +1,4 @@
-/* Giao diện: tab Tra cứu và Dashboard. Toàn bộ tính toán nằm trong js/analysis.js. */
+/* Giao diện: tab Tra cứu. Tab Sự vụ và Dashboard (phân tích sự vụ) nằm trong js/tickets-ui.js. */
 (function () {
   'use strict';
 
@@ -12,8 +12,6 @@
     category: '',
     item: '',
     reason: '',
-    reqTab: 'open',
-    dash: null,
     model: null,
   };
 
@@ -139,22 +137,6 @@
     }
   }
 
-  /** Bối cảnh email cho một yêu cầu: gộp các hạng mục cùng mã đầu việc. */
-  function requestContext(model, r) {
-    // Mã CH không có trong BOQ (lỗi E04): vẫn hiển thị, dùng thông tin trống thay vì làm hỏng trang.
-    const store = model.storeMap.get(r.storeCode) || {
-      code: r.storeCode, storeName: '', region: null, contractor: null, handover: null, warrantyEnd: null,
-    };
-    const matched = model.items.filter((i) => i.storeCode === r.storeCode && i.code === r.code);
-    const names = matched.map((i) => i.item);
-    const item = {
-      item: names.length > 3 ? `${names.slice(0, 3).join('; ')}…` : names.join('; ') || r.detail || '',
-      code: r.code,
-      reason: r.reasonText,
-    };
-    return { store, item, request: r, warranty: A.warrantyInfo(store.handover, store.warrantyEnd, model.asOf) };
-  }
-
   // ---------- Tra cứu ----------
   function renderStoreChips() {
     $('#store-chips').innerHTML = state.model.stores
@@ -234,7 +216,7 @@
       </section>`;
   }
 
-  /** Hạng mục gom theo nhóm, mỗi nhóm là một mục có thể mở. Dùng chung cho tra cứu và dashboard. */
+  /** Hạng mục gom theo nhóm, mỗi nhóm là một mục có thể mở. Dùng trong tra cứu. */
   function categoryGroupsHtml(cases) {
     const groups = new Map();
     for (const c of cases) {
@@ -341,178 +323,12 @@
     if (!confirmed) renderResults();
   }
 
-  // ---------- Dashboard ----------
-  function kpiTile(label, value, sub, tone) {
-    return `<div class="kpi kpi-${tone}"><div class="kpi-value">${value}</div><div class="kpi-label">${label}</div><div class="kpi-sub">${sub}</div></div>`;
-  }
-
-  function renderKpis(k) {
-    $('#kpis').innerHTML = [
-      kpiTile('Cửa hàng', k.stores, `${k.covered} còn bảo hành`, 'neutral'),
-      kpiTile('Còn bảo hành', k.covered, `${k.expired} đã hết`, 'ok'),
-      kpiTile('Sắp hết BH', k.expiring, `trong ${A.CONFIG.warnDays} ngày`, k.expiring ? 'warn' : 'neutral'),
-      kpiTile('Yêu cầu đang mở', k.open, `${k.closed} đã xử lý / đóng`, k.open ? 'warn' : 'ok'),
-      kpiTile('Quá hạn phản hồi', k.overdue, 'cần xử lý ngay', k.overdue ? 'err' : 'ok'),
-      kpiTile('Lỗi kiểm tra', k.errors, `${k.warnings} cảnh báo`, k.errors ? 'err' : 'ok'),
-    ].join('');
-  }
-
-  function renderWarnings(d) {
-    const lines = [];
-    if (d.expiring.length) {
-      lines.push(
-        ...d.expiring.map(
-          (s) => `<li class="warn-line"><i class="fa-solid fa-clock" aria-hidden="true"></i><span><strong>${esc(s.code)}</strong> ${esc(s.storeName || '')}: hết BH ${fmt(s.warranty.endDate)}, còn ${s.warranty.daysLeft} ngày</span></li>`
-        )
-      );
-    } else {
-      const nearest = d.covered[0];
-      lines.push(
-        `<li class="ok-line"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Không có cửa hàng nào sắp hết bảo hành trong ${A.CONFIG.warnDays} ngày.${nearest ? ` Gần nhất: ${esc(nearest.code)}, còn ${nearest.warranty.daysLeft} ngày.` : ''}</span></li>`
-      );
-    }
-    if (d.kpi.overdue) {
-      const worst = d.open[0];
-      lines.push(
-        `<li class="err-line"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span><strong>${d.kpi.overdue} yêu cầu</strong> đã quá hạn phản hồi, lâu nhất ${worst.overdueDays} ngày (${esc(worst.storeCode)}).</span></li>`
-      );
-    }
-    $('#warnings').innerHTML = `<h2>Cảnh báo bảo hành</h2><ul class="lines">${lines.join('')}</ul>`;
-  }
-
-  function renderStores(d) {
-    const rows = d.covered.length
-      ? d.covered
-          .map((s) => {
-            const w = s.warranty;
-            const pct = w.progress ?? 0;
-            const cases = A.searchCases(state.model, { storeCode: s.code });
-            const groups = categoryGroupsHtml(cases);
-            return `
-              <article class="store-row">
-                <div class="store-row-top">
-                  <div><span class="code">${esc(s.code)}</span> <span class="sname">${esc(s.storeName || '')}</span></div>
-                  ${warrantyBadge(w)}
-                </div>
-                <div class="muted small">${esc(s.region || 'Chưa có miền')} · ${esc(s.contractor || 'Chưa có nhà thầu')} · ${s.itemCount} hạng mục · ${s.openCount} yêu cầu mở</div>
-                <div class="progress" role="img" aria-label="Đã dùng ${pct}% thời hạn bảo hành"><i style="width:${pct}%"></i></div>
-                <div class="muted small">Ngày KT ${fmt(s.handover)} → hết BH ${fmt(s.warrantyEnd)} (đã dùng ${pct}%)</div>
-                <details class="store-items">
-                  <summary>Xem ${cases.length} hạng mục theo ${groups.groupCount} nhóm</summary>
-                  ${groups.html}
-                </details>
-              </article>`;
-          })
-          .join('')
-      : '<p class="empty">Không có cửa hàng nào còn bảo hành.</p>';
-    $('#store-list').innerHTML = rows;
-  }
-
-  function requestRow(r, model) {
-    const detail = r.detail && r.detail !== r.reasonText ? r.detail : '';
-    return `
-      <tr>
-        <td data-label="Cửa hàng"><span class="code">${esc(r.storeCode)}</span></td>
-        <td data-label="Nội dung"><div class="cell-title">${esc(r.reasonText || r.detail || 'Yêu cầu bảo hành')}</div>${detail ? `<div class="muted small">${esc(detail)}</div>` : ''}</td>
-        <td data-label="Mã BH">${esc(r.code || '—')}</td>
-        <td data-label="Gửi → hạn" class="nowrap">${fmt(r.sentDate)} → ${fmt(r.deadline)}</td>
-        <td data-label="Trạng thái">${requestBadge(r)}${r.statusText ? `<div class="muted small">${esc(r.statusText)}</div>` : ''}</td>
-        <td data-label="Phản hồi gần nhất">${esc(r.response || '—')}</td>
-        <td data-label="Gửi email"><div class="mail-cell">${mailComposer(requestContext(model, r))}</div></td>
-      </tr>`;
-  }
-
-  /** Bảng yêu cầu, chuyển giữa đang xử lý và đã đóng. Trên điện thoại mỗi dòng thành một thẻ có nhãn. */
-  function renderRequests() {
-    const d = state.dash;
-    const isOpen = state.reqTab === 'open';
-    const list = isOpen ? d.open : d.closed;
-    document.querySelectorAll('[data-req]').forEach((b) => {
-      const on = b.dataset.req === state.reqTab;
-      b.classList.toggle('is-active', on);
-      b.setAttribute('aria-pressed', String(on));
-    });
-    $('#open-count').textContent = d.open.length;
-    $('#closed-count').textContent = d.closed.length;
-    $('#req-meta').textContent = isOpen
-      ? 'Sắp xếp: quá hạn lâu nhất lên đầu.'
-      : 'Sắp xếp: yêu cầu gửi gần nhất lên đầu.';
-    $('#req-wrap').innerHTML = list.length
-      ? `<table class="req-table">
-          <thead><tr>
-            <th>Cửa hàng</th><th>Nội dung</th><th>Mã BH</th><th>Gửi → hạn</th>
-            <th>Trạng thái</th><th>Phản hồi gần nhất</th><th>Gửi email</th>
-          </tr></thead>
-          <tbody>${list.map((r) => requestRow(r, state.model)).join('')}</tbody>
-        </table>`
-      : `<p class="empty">${isOpen ? 'Không có yêu cầu nào đang mở.' : 'Chưa có yêu cầu nào đã đóng.'}</p>`;
-  }
-
-  function renderCategories(d) {
-    const max = d.byCategory.reduce((m, c) => Math.max(m, c.total), 0) || 1;
-    $('#category-bars').innerHTML = d.byCategory.length
-      ? d.byCategory
-          .map((c) => {
-            const width = Math.round((c.total / max) * 100);
-            const openShare = c.total ? Math.round((c.open / c.total) * 100) : 0;
-            return `
-              <div class="bar-row">
-                <span class="bar-label">${esc(c.category)}</span>
-                <div class="bar" style="width:${width}%" title="${c.open} đang mở / ${c.total} yêu cầu"><i style="width:${openShare}%"></i></div>
-                <span class="bar-val">${c.open}/${c.total}</span>
-              </div>`;
-          })
-          .join('')
-      : '<p class="empty">Chưa có yêu cầu.</p>';
-  }
-
-  function checkItem(c) {
-    const meta = {
-      error: ['sev-err', 'fa-circle-xmark', 'Lỗi'],
-      warning: ['sev-warn', 'fa-triangle-exclamation', 'Cảnh báo'],
-      info: ['sev-info', 'fa-circle-info', 'Ghi chú'],
-    }[c.severity];
-    const shown = c.refs.slice(0, 20).map((r) => `<li>${esc(r)}</li>`).join('');
-    const more = c.refs.length > 20 ? `<li>… và ${c.refs.length - 20} dòng nữa</li>` : '';
-    return `
-      <details class="check ${meta[0]}">
-        <summary>
-          <i class="fa-solid ${meta[1]}" aria-hidden="true"></i>
-          <span class="check-title"><span class="sev">${meta[2]} ${esc(c.id)}</span> ${esc(c.title)}</span>
-          <span class="count">${c.count}</span>
-        </summary>
-        <p>${esc(c.detail)}</p>
-        <ul>${shown}${more}</ul>
-      </details>`;
-  }
-
-  function renderChecks(d) {
-    const failing = d.checks.filter((c) => c.count > 0);
-    const passing = d.checks.filter((c) => c.count === 0);
-    $('#checks').innerHTML = `
-      <h2>Kiểm tra dữ liệu</h2>
-      ${failing.length ? failing.map(checkItem).join('') : '<p class="empty">Không phát hiện lỗi nào.</p>'}
-      ${passing.length ? `<details class="ok-list"><summary>${passing.length} kiểm tra không phát hiện lỗi</summary><ul>${passing.map((c) => `<li>${esc(c.id)} · ${esc(c.title)}</li>`).join('')}</ul></details>` : ''}`;
-  }
-
-  function renderDashboard() {
-    const d = A.buildDashboard(state.model);
-    renderKpis(d.kpi);
-    renderWarnings(d);
-    renderStores(d);
-    state.dash = d;
-    renderRequests();
-    renderCategories(d);
-    renderChecks(d);
-  }
-
   // ---------- Khởi tạo và sự kiện ----------
   function rebuild() {
     state.model = A.buildModel(DATA, state.asOf);
     $('#asof').value = state.asOf;
     $('#as-of-label').textContent = `Tính đến ${fmt(state.asOf)}`;
     renderLookup();
-    renderDashboard();
     if (window.WarrantyTicketsUI) window.WarrantyTicketsUI.refresh();
   }
 
@@ -576,13 +392,6 @@
       $('#f-store').value = '';
       renderLookup();
     });
-
-    document.querySelectorAll('[data-req]').forEach((b) =>
-      b.addEventListener('click', () => {
-        state.reqTab = b.dataset.req;
-        renderRequests();
-      })
-    );
 
     document.addEventListener('change', onComposerChange);
     document.addEventListener('click', onComposerCopy);

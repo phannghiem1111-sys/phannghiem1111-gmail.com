@@ -1,6 +1,6 @@
 /*
  * Tab Sự vụ: tạo sự vụ gửi nhà thầu, danh sách, ghi nhận tình trạng, xuất biên bản PDF.
- * Dashboard dùng phần phân tích tổng hợp của cùng module (renderAnalysis).
+ * Dashboard chỉ gồm phần phân tích tổng hợp sự vụ của cùng module (renderAnalysis), vẽ lại sau mỗi lần lưu.
  * Logic nghiệp vụ nằm trong tickets.js, lưu trữ trong store.js, biên bản trong pdf.js.
  */
 (function () {
@@ -12,6 +12,7 @@
     tickets: [],
     events: [],
     error: null,
+    updatedAt: null,
     mode: '',
     canWrite: true,
     filter: 'open',
@@ -45,6 +46,28 @@
   function addDays(iso, days) {
     const [y, m, d] = iso.split('-').map(Number);
     return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+  }
+
+  /** Thêm hoặc thay bản ghi theo id. */
+  function upsert(list, row) {
+    return [...list.filter((x) => x.id !== row.id), row];
+  }
+
+  /**
+   * Ghi xong thì đưa ngay bản ghi vào dữ liệu đang hiển thị và vẽ lại Sự vụ lẫn Dashboard,
+   * không chờ nơi lưu báo lại. Lần báo sau của nơi lưu sẽ thay bằng dữ liệu đầy đủ.
+   */
+  function applySaved({ ticket, event }) {
+    if (ticket) S.tickets = upsert(S.tickets, ticket);
+    if (event) S.events = upsert(S.events, event);
+    S.updatedAt = new Date();
+    refresh();
+  }
+
+  function storeReady(key) {
+    if (store) return true;
+    setMsg(key, 'Đang tải nơi lưu sự vụ, thử lại sau giây lát.');
+    return false;
   }
 
   function views() {
@@ -134,6 +157,7 @@
     }
     const errors = D.T.validateTicketInput(input);
     if (errors.length) return setMsg('form', errors.join(' '));
+    if (!storeReady('form')) return;
     const st = model.storeMap.get(storeCode);
     const warranty = D.A.warrantyInfo(st.handover, st.warrantyEnd, asOf);
     const nowIso = nowFor(asOf);
@@ -146,9 +170,8 @@
       S.confirmClose = false;
       el('tk-form').reset();
       el('f-tk-deadline').value = addDays(asOf, 7);
-      renderTicketFormOptions();
-      setMsg('form', `Đã tạo sự vụ ${ticket.id}.`);
-      refresh();
+      setMsg('form', `Đã tạo sự vụ ${ticket.id}. Dashboard đã cập nhật.`);
+      applySaved({ ticket, event: ev });
       el('ticket-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
       setMsg('form', err.message || 'Không tạo được sự vụ.');
@@ -308,7 +331,7 @@
   async function saveStatusFromDetail(e) {
     e.preventDefault();
     const v = currentView();
-    if (!v || !S.canWrite) return;
+    if (!v || !S.canWrite || !storeReady('detail')) return;
     const by = el('f-st-by').value;
     S.by = by;
     try {
@@ -320,7 +343,8 @@
         reportedDate: el('f-st-date').value,
       });
       await store.addEvent(ev);
-      setMsg('detail', 'Đã ghi nhận tình trạng.');
+      S.msg.detail = 'Đã ghi nhận tình trạng.';
+      applySaved({ event: ev });
     } catch (err) {
       setMsg('detail', err.message || 'Không ghi nhận được tình trạng.');
     }
@@ -328,13 +352,14 @@
 
   async function addSimpleEvent(type) {
     const v = currentView();
-    if (!v || !S.canWrite) return;
+    if (!v || !S.canWrite || !storeReady('detail')) return;
     const by = (el('f-st-by') && el('f-st-by').value) || S.by || v.createdBy;
     try {
       const ev = D.T.buildEvent(v.id, type, { by, atIso: nowFor(D.getAsOf()) });
       await store.addEvent(ev);
       S.confirmClose = false;
-      setMsg('detail', type === 'close' ? 'Đã đóng sự vụ.' : 'Đã ghi nhận đã gửi nhà thầu.');
+      S.msg.detail = type === 'close' ? 'Đã đóng sự vụ.' : 'Đã ghi nhận đã gửi nhà thầu.';
+      applySaved({ event: ev });
     } catch (err) {
       setMsg('detail', err.message || 'Không ghi nhận được.');
     }
@@ -395,6 +420,17 @@
     el('kpis-tk').innerHTML = tiles
       .map(([label, value, sub, tone]) => `<div class="kpi kpi-${tone}"><div class="kpi-value">${value}</div><div class="kpi-label">${esc(label)}</div><div class="kpi-sub">${esc(sub)}</div></div>`)
       .join('');
+  }
+
+  /** Dòng nguồn dữ liệu trên dashboard: nơi lưu, số sự vụ và lần cập nhật gần nhất. */
+  function renderSyncLine(all) {
+    const box = el('tk-sync');
+    if (!box) return;
+    const where = !store ? 'Đang tải sự vụ đã lưu' : S.mode === 'shared' ? 'Sự vụ dùng chung' : 'Sự vụ lưu trên trình duyệt này';
+    const at = S.updatedAt
+      ? `, cập nhật ${String(S.updatedAt.getHours()).padStart(2, '0')}:${String(S.updatedAt.getMinutes()).padStart(2, '0')}`
+      : '';
+    box.textContent = store ? `${where}: ${all.length} sự vụ${at}` : `${where}…`;
   }
 
   /** Cảnh báo sự vụ quá hạn trên dashboard. Bấm Xem sẽ mở tab Sự vụ tại sự vụ đó. */
@@ -568,6 +604,7 @@
     if (!D || !D.getModel()) return;
     renderTicketFormOptions();
     const all = views();
+    renderSyncLine(all);
     renderTicketKpis(all);
     renderAlerts(all);
     renderAnalysis(all);
@@ -581,12 +618,17 @@
     refresh();
     await resolveWritePermission();
     applyWriteGate();
-    store = await window.WarrantyStore.openStore({ claude: window.claude, storage: window.localStorage });
-    S.mode = store.mode;
+    const opened = await window.WarrantyStore.openStore({
+      claude: window.claude,
+      storage: window.WarrantyStore.safeLocalStorage(),
+    });
+    S.mode = opened.mode;
+    store = opened;
     store.subscribe((state) => {
       S.tickets = state.tickets || [];
       S.events = state.events || [];
       S.error = state.error || null;
+      S.updatedAt = new Date();
       refresh();
     });
   }
