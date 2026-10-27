@@ -1100,7 +1100,7 @@ function gdErr(e){
 const gdSeen={ get(){ try{ return JSON.parse(localStorage.getItem('tk_gd')||'{}'); }catch(e){ return {}; } }, set(v){ try{ localStorage.setItem('tk_gd',JSON.stringify(v)); }catch(e){} } };
 // Nguồn Drive: trên claude.ai dùng kết nối Google Drive của người xem; trên web riêng (Vercel…) dùng Google Drive API với khóa API
 // (thư mục và file phải để "Bất kỳ ai có đường liên kết đều xem được").
-const GD_API_KEY='';
+const GD_API_KEY='AIzaSyCnYFxa8dhBJrIridkXMP5Xu9_GR7KdxIE';
 const GS='application/vnd.google-apps.spreadsheet', XL='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 async function driveSource(){
   let mcp=null;
