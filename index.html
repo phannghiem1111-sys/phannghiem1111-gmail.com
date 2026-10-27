@@ -1098,31 +1098,51 @@ function gdErr(e){
 }
 // file Drive đã nạp: id -> modifiedTime (chỉ tải lại file mới hoặc vừa sửa)
 const gdSeen={ get(){ try{ return JSON.parse(localStorage.getItem('tk_gd')||'{}'); }catch(e){ return {}; } }, set(v){ try{ localStorage.setItem('tk_gd',JSON.stringify(v)); }catch(e){} } };
-async function fromDrive(auto){
-  const btn=$('gd'); let mcp=null;
+// Nguồn Drive: trên claude.ai dùng kết nối Google Drive của người xem; trên web riêng (Vercel…) dùng Google Drive API với khóa API
+// (thư mục và file phải để "Bất kỳ ai có đường liên kết đều xem được").
+const GD_API_KEY='';
+const GS='application/vnd.google-apps.spreadsheet', XL='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+async function driveSource(){
+  let mcp=null;
   try{ mcp=await (window.claude&&window.claude.use?window.claude.use('mcp'):null); }catch(e){ mcp=null; }
-  if(!mcp){ if(!auto) msg('Lấy từ Google Drive chỉ chạy khi mở trang trên claude.ai và đã đăng nhập.','err'); return; }
+  if(mcp) return {kind:'mcp',
+    async list(){ let files=[], tok;
+      do{ const r=await mcp.callTool('Google Drive','search_files',{query:`parentId = '${GD_FOLDER}'`,excludeContentSnippets:true,pageSize:100,...(tok?{pageToken:tok}:{})},{cache:false});
+        const p=r.payload||{}; files=files.concat(p.files||[]); tok=p.nextPageToken&&(p.files||[]).length?p.nextPageToken:null; }while(tok);
+      return files; },
+    async get(f){ const r=await mcp.callTool('Google Drive','download_file_content',{fileId:f.id,...(f.mimeType===GS?{exportMimeType:XL}:{})},{cache:false});
+      const c=r.payload&&r.payload.content; if(!c) throw new Error(f.title+': Drive không trả nội dung'); return b64bytes(c); } };
+  if(GD_API_KEY) { const api='https://www.googleapis.com/drive/v3/files';
+    const go=async u=>{ const r=await fetch(u); if(!r.ok){ let m=''; try{ const j=await r.json(); m=j.error&&j.error.message||''; }catch(e){}
+        throw new Error(r.status===404?'không thấy thư mục/file: hãy chia sẻ "Bất kỳ ai có đường liên kết"':r.status===403?'Google từ chối ('+m+'): kiểm tra khóa API đã bật Google Drive API và cho phép tên miền này':'HTTP '+r.status+' '+m); } return r; };
+    return {kind:'api',
+      async list(){ let files=[], tok;
+        do{ const q=encodeURIComponent(`'${GD_FOLDER}' in parents and trashed = false`);
+          const j=await (await go(`${api}?q=${q}&fields=nextPageToken,files(id,name,mimeType,modifiedTime,size)&pageSize=100&key=${GD_API_KEY}${tok?'&pageToken='+tok:''}`)).json();
+          files=files.concat((j.files||[]).map(f=>({id:f.id,title:f.name,mimeType:f.mimeType,modifiedTime:f.modifiedTime,fileSize:f.size}))); tok=j.nextPageToken; }while(tok);
+        return files; },
+      async get(f){ const u=f.mimeType===GS?`${api}/${f.id}/export?mimeType=${encodeURIComponent(XL)}&key=${GD_API_KEY}`:`${api}/${f.id}?alt=media&key=${GD_API_KEY}`;
+        return new Uint8Array(await (await go(u)).arrayBuffer()); } }; }
+  return null;
+}
+async function fromDrive(auto){
+  const btn=$('gd'); const src=await driveSource();
+  if(!src){ if(!auto) msg('Chưa kết nối được Google Drive ở trang này.','err'); return; }
   if(btn.disabled) return;
   btn.disabled=true; const old=btn.textContent; btn.textContent='Đang đọc Drive…';
   try{
     msg('Đang xem thư mục Google Drive…');
-    let files=[], tok;
-    do{ const r=await mcp.callTool('Google Drive','search_files',{query:`parentId = '${GD_FOLDER}'`,excludeContentSnippets:true,pageSize:100,...(tok?{pageToken:tok}:{})},{cache:false});
-      const p=r.payload||{}; files=files.concat(p.files||[]); tok=p.nextPageToken&&(p.files||[]).length?p.nextPageToken:null; }while(tok);
-    const GS='application/vnd.google-apps.spreadsheet', XL='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    files=files.filter(f=>(f.mimeType===GS||/\.xlsx?$/i.test(f.title||''))&&!/^~\$/.test(f.title||''))
-      .sort((a,b)=>String(a.title).localeCompare(String(b.title),'vi',{numeric:true}));   // theo tên file: tháng trước nạp trước, tháng sau ghi đè
+    let files=(await src.list()).filter(f=>(f.mimeType===GS||/\.xlsx?$/i.test(f.title||''))&&!/^~\$/.test(f.title||''))
+      .sort((a,b)=>String(a.title).localeCompare(String(b.title),'vi',{numeric:true}));   // theo tên file: file sau ghi đè ticket trùng mã
     if(!files.length){ msg('Thư mục Google Drive chưa có file Excel nào.','err'); return; }
     const seen=STORE.size?gdSeen.get():{}; const todo=files.filter(f=>seen[f.id]!==f.modifiedTime);
     if(!todo.length){ if(!auto) msg(`Google Drive: không có thay đổi (${files.length} file đã nạp).`); return; }
     const done=[], bad=[];
     for(const [k,f] of todo.entries()){
       msg(`Đang tải ${f.title} (${k+1}/${todo.length})…`);
-      try{ const r=await mcp.callTool('Google Drive','download_file_content',{fileId:f.id,...(f.mimeType===GS?{exportMimeType:XL}:{})},{cache:false});
-        const c=r.payload&&r.payload.content; if(!c) throw new Error(f.title+': Drive không trả nội dung');
-        done.push(readBytes(b64bytes(c),f.title)); seen[f.id]=f.modifiedTime; }
+      try{ done.push(readBytes(await src.get(f),f.title)); seen[f.id]=f.modifiedTime; }
       catch(e){ if(e&&e.code&&!['tool_error','server_unavailable','upstream_error'].includes(e.code)&&!/too.large|16 ?MB/i.test(e.message||'')) throw e;
-        bad.push(/too.large|16 ?MB/i.test(e&&e.message||'')?`${f.title} quá lớn để tải qua Google Drive (${f.fileSize?(f.fileSize/1048576).toFixed(1)+' MB':''}): hãy tách thành nhiều file nhỏ (mỗi file 1–3 tháng, dưới 3 MB)`:(e&&e.code?f.title+': '+gdErr(e):e.message)); }
+        bad.push(/too.large|16 ?MB/i.test(e&&e.message||'')?`${f.title} quá lớn để tải qua kết nối Google Drive của claude.ai (${f.fileSize?(f.fileSize/1048576).toFixed(1)+' MB':''}): hãy tách nhỏ (dưới 5 MB)`:(e&&e.code?f.title+': '+gdErr(e):f.title+': '+e.message)); }
     }
     if(done.length){ gdSeen.set(seen); memo.set(false); SEL=null; showMonth(); saveStore(); if(!auto) go(0); }
     msg('Google Drive: '+done.map(d=>`${d.file} (${d.sheets.length>1?d.sheets.join(', ')+', ':''}${fmt(d.n)} ticket, tháng ${d.ms.join(', ')})`).concat(bad).join(' · '),bad.length?'err':'ok');
@@ -1130,7 +1150,7 @@ async function fromDrive(auto){
   finally{ btn.disabled=false; btn.textContent=old; }
 }
 $('gd').onclick=()=>fromDrive(false);
-if(!(window.claude&&window.claude.use)) $('gd').hidden=true;   // ngoài claude.ai không có kết nối Google Drive
+if(!(window.claude&&window.claude.use)&&!GD_API_KEY) $('gd').hidden=true;   // web riêng chưa có khóa API thì không đọc được Drive
 function readOne(f){
   return new Promise((ok,no)=>{ const rd=new FileReader();
     rd.onerror=()=>no(new Error('Không đọc được file '+f.name));
