@@ -322,6 +322,7 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
         <div class="mh">Xuất báo cáo</div>
         <button class="mi" id="dl" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Tải Excel</button>
         <div class="msep"></div>
+        <button class="mi" id="rl" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Xóa và nạp lại tháng này</span></button>
         <button class="mi danger" id="clr" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>Xóa dữ liệu</button>
       </div>
     </div>
@@ -913,7 +914,7 @@ function showMonth(){
   STATS=LIST.map(v=>monthStats(monthView(v.y,v.m)));
   if(SEL.all){ const B=baseStats(STATS); M=allView(B.map(s=>s.v),STATS.filter(s=>!B.includes(s)).map(s=>'T'+s.v.month)); DIV=B.length; }
   else { M=STATS[LIST.findIndex(v=>v.y===SEL.y&&v.m===SEL.m)].v; DIV=1; }
-  renderMonths(); render(); renderOverview(); $('dl').hidden=!!SEL.all; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
+  renderMonths(); render(); renderOverview(); $('dl').hidden=!!SEL.all; $('rl').hidden=!!SEL.all||$('gd').hidden; $('rl').querySelector('.lbl').textContent=`Xóa và nạp lại tháng ${M.month}`; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
 }
 
 // ---------------------------------------------------------------- Excel 3 sheet
@@ -1120,6 +1121,10 @@ function clearData(){
   STORE=new Map(); SEL=null; memo.set(true); DB.set('recs',null); gdSeen.set({}); clearView();
   msg('Đã xóa toàn bộ dữ liệu cũ.');
 }
+$('rl').onclick=()=>{ closeMenu(); if(!M||SEL.all) return; const y=M.year||SEL.y, m=M.month;
+  if(!confirm(`Xóa dữ liệu tháng ${m} trên máy này rồi nạp lại tháng ${m} mới nhất từ Google Drive?`)) return;
+  for(const [k,r] of STORE) if(r.created&&r.created.getFullYear()===y&&r.created.getMonth()+1===m) STORE.delete(k);
+  gdSeen.set({}); fromDrive(false); };
 $('clr').onclick=()=>{ closeMenu(); if(confirm('Xóa toàn bộ dữ liệu đã nạp trên máy này?')) clearData(); };
 const mBtn=$('moreBtn'), mMenu=$('moreMenu');
 function closeMenu(){ mMenu.hidden=true; mBtn.setAttribute('aria-expanded','false'); }
@@ -1131,6 +1136,14 @@ let msgT=0; function msg(t,cls){ const m=$('msg'); m.replaceChildren(); clearTim
 function load(objs,file){
   if(!objs.length||!('Tiêu đề' in objs[0])||!('Trạng thái' in objs[0])) throw new Error(file+': không có các cột Tiêu đề / Trạng thái của file danh sách sự vụ OPS.');
   const recs=prepareRecs(objs,file); let n=0;
+  // sheet chính của một tháng (≥ một nửa số ticket thuộc tháng đó) và có dữ liệu mới hơn: thay hẳn dữ liệu tháng đó, bỏ ticket cũ không còn trong file
+  const ym=d=>d.getFullYear()*100+d.getMonth()+1, cnt=new Map();
+  for(const r of recs) if(r.created){ const k=ym(r.created); cnt.set(k,(cnt.get(k)||0)+1); }
+  for(const [k,c] of cnt) if(c*2>=recs.length){
+    const mx=a=>a.reduce((x,r)=>r.created&&ym(r.created)===k&&r.created>x?r.created:x,0);
+    const old=[...STORE.values()].filter(r=>r.created&&ym(r.created)===k);
+    if(old.length&&mx(recs)>=mx(old)) for(const r of old) STORE.delete(String(r.id));
+  }
   for(const r of recs){ if(r.id==null) continue; STORE.set(String(r.id),r); n++; }
   const ms=[...new Set(recs.filter(r=>r.created).map(r=>r.created.getMonth()+1))].sort((a,b)=>a-b);
   return {file,n,ms};
