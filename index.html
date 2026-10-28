@@ -165,9 +165,11 @@ h1{font-size:21px}
 .tabs button:disabled{opacity:.35;cursor:default}
 .tabs button:focus-visible,.pg:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
 .pnav .filters{margin-left:auto}
+.msel{font:600 14px var(--f-body);height:36px;padding:0 34px 0 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 10px center/14px no-repeat;color:var(--ink);cursor:pointer;-webkit-appearance:none;appearance:none;min-width:170px}
+.msel:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .seg button{padding:5px 8px}
 @media (max-width:1500px){.pnav .flab{display:none}}
-.pager{display:flex;align-items:center;gap:6px;font:600 12px var(--f-body);color:var(--muted);font-variant-numeric:tabular-nums}
+.pager{display:none!important;align-items:center;gap:6px;font:600 12px var(--f-body);color:var(--muted);font-variant-numeric:tabular-nums}
 .pg{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:18px;line-height:1;cursor:pointer}
 .pg:disabled{opacity:.35;cursor:default}
 main#pages{display:block;padding-block:14px;box-sizing:border-box}
@@ -327,7 +329,7 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
 
 <nav class="pnav" id="pnav" aria-label="Các trang"><div class="wrap">
   <div class="tabs" id="tabs" role="tablist"></div>
-  <div class="filters" id="filters"><span class="flab">Tháng</span><div class="seg" id="segMonth"></div></div>
+  <div class="filters" id="filters"><span class="flab">Tháng</span><div id="segMonth"></div></div>
   <div class="pager"><button class="pg" id="pPrev" type="button" aria-label="Trang trước">‹</button><span id="pNum">1/7</span><button class="pg" id="pNext" type="button" aria-label="Trang sau">›</button></div>
 </div></nav>
 
@@ -774,9 +776,11 @@ let LIST=[], STATS=[];
 function pickMonth(i){ const v=LIST[i]; if(!v) return; SEL={y:v.y,m:v.m}; showMonth(); }
 function renderMonths(){
   const segm=$('segMonth'); segm.replaceChildren();
-  if(LIST.length>1){ const B=baseStats(STATS); const b=el('button','ALL','all'); b.type='button'; b.title=`Trung bình ${B.length} tháng đã trọn tháng (T${B[0].v.month}–T${B[B.length-1].v.month})`;
-    b.setAttribute('aria-pressed',SEL.all?'true':'false'); b.onclick=()=>{ SEL={all:true}; showMonth(); }; segm.append(b); }
-  LIST.forEach((v,i)=>{ const b=el('button',`T${v.m}`); b.title=`Tháng ${v.m}/${v.y}`; b.type='button'; b.setAttribute('aria-pressed',!SEL.all&&v.y===SEL.y&&v.m===SEL.m?'true':'false'); b.onclick=()=>pickMonth(i); segm.append(b); });
+  const sel=document.createElement('select'); sel.className='msel'; sel.setAttribute('aria-label','Chọn tháng');
+  if(LIST.length>1){ const B=baseStats(STATS); const o=new Option(`ALL (TB ${B.length} tháng)`,'all',false,!!SEL.all); o.title=`Trung bình ${B.length} tháng đã trọn tháng (T${B[0].v.month}–T${B[B.length-1].v.month})`; sel.add(o); }
+  LIST.forEach((v,i)=>sel.add(new Option(`Tháng ${v.m}/${v.y}`,String(i),false,!SEL.all&&v.y===SEL.y&&v.m===SEL.m)));
+  sel.onchange=()=>{ if(sel.value==='all'){ SEL={all:true}; showMonth(); } else pickMonth(+sel.value); };
+  segm.append(sel);
   if($('mHint')) $('mHint').textContent=LIST.length<2?'Nạp thêm file các tháng khác để so sánh xu hướng.':`Đã có ${LIST.length} tháng. Bấm vào cột trên biểu đồ để xem chi tiết tháng đó.`;
 }
 function delta(cur,prev,upGood,kind){
