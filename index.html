@@ -619,7 +619,8 @@ function nvTable(){
   const b=t.createTBody(); let shown=0;
   for(const reg of REGIONS){
     const g=by(rows.filter(r=>r.reg===reg),r=>r.lead+'\u0001'+r.nv);
-    const keys=[...g.keys()].sort((a,b)=>{const [la,na]=a.split('\u0001'),[lb,nb]=b.split('\u0001'); return vi(leadKey(la),leadKey(lb))||vi(na,nb);});
+    const pd=new Map([...g].map(([k,v])=>[k,agg(v).pend]));   // trong mỗi đội trưởng: nhân viên tồn (chưa xong) nhiều nhất lên đầu
+    const keys=[...g.keys()].sort((a,b)=>{const [la,na]=a.split('\u0001'),[lb,nb]=b.split('\u0001'); return vi(leadKey(la),leadKey(lb))||pd.get(b)-pd.get(a)||vi(na,nb);});
     for(const k of keys){ const [l,nv]=k.split('\u0001'); if(q&&!String(nv).toLowerCase().includes(q)) continue;
       const v=g.get(k); const a=agg(v); const tr=b.insertRow(); shown++;
       tr.append(el('td',reg,'l'),el('td',leadName(l),'l'),el('td',nv,'l'));
