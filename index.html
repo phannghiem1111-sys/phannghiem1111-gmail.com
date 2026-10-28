@@ -233,6 +233,7 @@ thead th{position:sticky;top:0;background:var(--panel);z-index:1}
 #tNv tr.grp2 th{text-align:center;font-size:11px;letter-spacing:.05em;border-bottom:0;padding-bottom:2px;top:0}
 #tNv tr.grp2 th.gsc{box-shadow:inset 0 -3px 0 var(--s2)} #tNv tr.grp2 th.gbt{box-shadow:inset 0 -3px 0 var(--s1)} #tNv tr.grp2 th.gall{box-shadow:inset 0 -3px 0 var(--brand);color:var(--ink)}
 #tNv thead tr.grp2+tr th{top:24px}
+#tNv tbody td{background:var(--rowbg,transparent)} #tNv tbody tr.lead1 td{border-top:2px solid var(--line)}
 #tNv .hsc,#tNv tr.grp2 th.gsc{background:color-mix(in srgb,var(--s2) 9%,transparent)} #tNv .hbt,#tNv tr.grp2 th.gbt{background:color-mix(in srgb,var(--s1) 9%,transparent)} #tNv .hall,#tNv tr.grp2 th.gall{background:color-mix(in srgb,var(--good) 10%,transparent)} #tNv tr.grp2 th.gall{box-shadow:inset 0 -3px 0 var(--good)!important} #tNv td.b{font-weight:700}
 /* bảng so sánh tháng */
 table.cmp{border-collapse:separate;border-spacing:0}
@@ -479,6 +480,7 @@ function agg(rows){
 const by=(rows,f)=>{ const m=new Map(); for(const r of rows){ const k=f(r); if(!m.has(k)) m.set(k,[]); m.get(k).push(r);} return m; };
 
 // ---------------------------------------------------------------- vẽ
+const LEAD_HUE=[265,330,48,180,5,210,95,300];
 let M=null, provFilter='all', nvType='SC', DIV=1;   // DIV: số tháng đang lấy trung bình (ALL), 1 khi xem một tháng
 const fc=n=>DIV===1?fmt(n):n==null||isNaN(n)?'—':(n/DIV).toLocaleString('vi-VN',{maximumFractionDigits:1});
 function render(){
@@ -617,12 +619,14 @@ function nvTable(){
                  :['Miền','Đội trưởng','Nhân viên kỹ thuật','Đã hoàn thành','Chưa','Tổng','% hoàn thành','Ngày xử lý TB','Trễ'];
   heads.forEach((x,i)=>hr.append(el('th',x,(i<3?'l':'')+(all?(i>=9?' hall':i>=6?' hbt':i>=3?' hsc':''):''))));
   const b=t.createTBody(); let shown=0;
+  let prevL=null, li=-1;   // mỗi đội trưởng một màu nền nhẹ
   for(const reg of REGIONS){
     const g=by(rows.filter(r=>r.reg===reg),r=>r.lead+'\u0001'+r.nv);
     const pd=new Map([...g].map(([k,v])=>[k,agg(v).pend]));   // trong mỗi đội trưởng: nhân viên tồn (chưa xong) nhiều nhất lên đầu
     const keys=[...g.keys()].sort((a,b)=>{const [la,na]=a.split('\u0001'),[lb,nb]=b.split('\u0001'); return vi(leadKey(la),leadKey(lb))||pd.get(b)-pd.get(a)||vi(na,nb);});
     for(const k of keys){ const [l,nv]=k.split('\u0001'); if(q&&!String(nv).toLowerCase().includes(q)) continue;
       const v=g.get(k); const a=agg(v); const tr=b.insertRow(); shown++;
+      const ln=String(leadName(l)).normalize('NFC').replace(/\s+/g,' ').trim(); if(ln!==prevL){ if(prevL!==null) tr.classList.add('lead1'); prevL=ln; li++; } tr.style.setProperty('--rowbg',`color-mix(in srgb,hsl(${LEAD_HUE[li%LEAD_HUE.length]} 75% 55%) 11%,var(--panel))`);
       tr.append(el('td',reg,'l'),el('td',leadName(l),'l'),el('td',nv,'l'));
       if(all){
         const s_=agg(v.filter(r=>!r.bt)), t_=agg(v.filter(r=>r.bt));
