@@ -1,4 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Ticket kỹ thuật Winmart</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -258,13 +259,49 @@ table.cmp tr.grp.sc td{box-shadow:inset 4px 0 0 var(--s2)}
 .dlt.pill.up{background:color-mix(in srgb,var(--good) 14%,transparent)} .dlt.pill.down{background:color-mix(in srgb,var(--badt) 14%,transparent)}
 .cmp-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);align-items:center}
 .cmp-legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.menu{position:relative;margin-left:auto}
-.menu>summary{list-style:none;user-select:none}
-.menu>summary::-webkit-details-marker{display:none}
-.menu .mlist{position:absolute;right:0;top:calc(100% + 6px);z-index:50;min-width:210px;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:10px;background:var(--brand);box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.menu .mlist .btn{text-align:left;width:100%}
-.menu .mlist .btn[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- giao diện gọn: một nút chính + menu "⋯", thanh tab và tháng cuộn ngang trên điện thoại */
+header.top .wrap{flex-wrap:nowrap;gap:12px}
+.ttlbox{min-width:0;flex:1}
+.actions{flex-wrap:nowrap;gap:8px;align-items:center;flex:none}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;white-space:nowrap}
+.btn.primary.ico::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11M7 10l5 5 5-5M5 20h14'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11M7 10l5 5 5-5M5 20h14'/%3E%3C/svg%3E") center/contain no-repeat}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{border-color:color-mix(in srgb,var(--brand-ink) 28%,transparent)}
+.btn.ghost:hover{background:color-mix(in srgb,var(--brand-ink) 10%,transparent)}
+.btn.sq{width:36px;padding:0;justify-content:center}
+.btn.sq svg{fill:currentColor}
+.more{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:220px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;display:grid}
+.menu .mh{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:6px 10px 4px}
+.menu .mi{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:500 14px var(--f-body);color:var(--ink);background:none;border:0;border-radius:8px;padding:10px;cursor:pointer}
+.menu .mi:hover,.menu .mi:focus-visible{background:color-mix(in srgb,var(--brand) 9%,transparent);outline:none}
+.menu .mi svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.menu .mi[disabled]{opacity:.55;cursor:default}
+.menu .mi.danger{color:var(--bad)} .menu .mi.danger svg{stroke:var(--bad)}
+.menu .msep{height:1px;background:var(--line);margin:4px 6px}
+.menu .mi[hidden]{display:none}
+.toast .chip{display:inline-flex;align-items:flex-start;gap:10px;line-height:1.4}
+.toast .chip.err{background:var(--panel);border-color:var(--bad);color:var(--ink);border-left-width:4px}
+.toast .tx{flex:none;border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:0 2px;cursor:pointer}
+@media (max-width:720px){
+  header.top .wrap{padding-block:12px 12px}
+  h1{font-size:18px;line-height:1.25}
+  .sub{font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .btn{height:34px;padding:0 12px;font-size:13px}
+  .btn.sq{width:34px}
+  .pnav .wrap{flex-wrap:nowrap;flex-direction:column;align-items:stretch;gap:6px;padding-block:6px}
+  .tabs,.pnav .seg{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar,.pnav .seg::-webkit-scrollbar{display:none}
+  .tabs{margin-inline:-16px;padding-inline:16px;gap:4px}
+  .tabs button{flex:none;padding:7px 12px;font-size:13.5px}
+  .pnav .filters{margin-left:0;flex-wrap:nowrap;min-width:0}
+  .pnav .seg{display:flex;width:100%}
+  .pnav .seg button{flex:none;padding:6px 11px}
+  .pager{display:none}
+  .toast{left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+}
 </style>
 
 <header class="top" id="hdr"><div class="wrap">
@@ -272,15 +309,20 @@ table.cmp tr.grp.sc td{box-shadow:inset 4px 0 0 var(--s2)}
     <h1 id="ttl">Ticket kỹ thuật tháng —</h1>
     <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
-  <details class="actions menu" id="menu">
-    <summary class="btn ghost">Chức năng ▾</summary>
-    <div class="mlist">
-    <button class="btn ghost" id="gd" type="button" title="Đọc các file Excel trong thư mục Google Drive &quot;FILE THO TICKET&quot; (mỗi sheet một tháng)">Lấy từ Google Drive</button>
-    <label class="btn ghost" for="file" id="pick">Nạp file các tháng</label>
-    <button class="btn ghost" id="clr" type="button" hidden>Xóa dữ liệu</button>
-    <button class="btn primary" id="dl" type="button" hidden>Tải Excel</button>
+  <div class="actions">
+    <div class="more">
+      <button class="btn ghost" id="moreBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="Chức năng">Chức năng <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.4"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="menu" id="moreMenu" role="menu" hidden>
+        <div class="mh">Nguồn dữ liệu</div>
+        <button class="mi" id="gd" type="button" role="menuitem" title="Đọc các file Excel trong thư mục Google Drive &quot;FILE THO TICKET&quot;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l4-7 4 7M8 10l4-7 4 7-4 7M4 17h16"/></svg><span class="lbl">Lấy từ Google Drive</span></button>
+        <label class="mi" for="file" id="pick" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 15v4h14v-4"/></svg>Nạp file Excel</label>
+        <div class="mh">Xuất báo cáo</div>
+        <button class="mi" id="dl" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Tải Excel</button>
+        <div class="msep"></div>
+        <button class="mi danger" id="clr" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>Xóa dữ liệu</button>
+      </div>
     </div>
-  </details>
+  </div>
 </div></header>
 
 <nav class="pnav" id="pnav" aria-label="Các trang"><div class="wrap">
@@ -862,7 +904,7 @@ function showMonth(){
   STATS=LIST.map(v=>monthStats(monthView(v.y,v.m)));
   if(SEL.all){ const B=baseStats(STATS); M=allView(B.map(s=>s.v),STATS.filter(s=>!B.includes(s)).map(s=>'T'+s.v.month)); DIV=B.length; }
   else { M=STATS[LIST.findIndex(v=>v.y===SEL.y&&v.m===SEL.m)].v; DIV=1; }
-  renderMonths(); render(); renderOverview(); $('dl').hidden=!!SEL.all; $('dl').textContent=`Tải Excel T${M.month}`;
+  renderMonths(); render(); renderOverview(); $('dl').hidden=!!SEL.all; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
 }
 
 // ---------------------------------------------------------------- Excel 3 sheet
@@ -1069,8 +1111,14 @@ function clearData(){
   STORE=new Map(); SEL=null; memo.set(true); DB.set('recs',null); gdSeen.set({}); clearView();
   msg('Đã xóa toàn bộ dữ liệu cũ.');
 }
-$('clr').onclick=clearData;
-let msgT=0; function msg(t,cls){ const m=$('msg'); m.replaceChildren(); clearTimeout(msgT); if(t){ m.append(el('span',t,'chip '+(cls||'ok'))); if(!cls||cls==='ok') msgT=setTimeout(()=>m.replaceChildren(),8000); } }
+$('clr').onclick=()=>{ closeMenu(); if(confirm('Xóa toàn bộ dữ liệu đã nạp trên máy này?')) clearData(); };
+const mBtn=$('moreBtn'), mMenu=$('moreMenu');
+function closeMenu(){ mMenu.hidden=true; mBtn.setAttribute('aria-expanded','false'); }
+mBtn.onclick=e=>{ e.stopPropagation(); const open=mMenu.hidden; mMenu.hidden=!open; mBtn.setAttribute('aria-expanded',String(open)); };
+mMenu.addEventListener('click',e=>{ if(e.target.closest('.mi')) setTimeout(closeMenu,0); });
+document.addEventListener('click',e=>{ if(!e.target.closest('.more')) closeMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+let msgT=0; function msg(t,cls){ const m=$('msg'); m.replaceChildren(); clearTimeout(msgT); if(t){ const c=el('span',t,'chip '+(cls||'ok')); const x=document.createElement('button'); x.type='button'; x.className='tx'; x.setAttribute('aria-label','Đóng'); x.textContent='×'; x.onclick=()=>{clearTimeout(msgT); m.replaceChildren();}; c.append(x); m.append(c); msgT=setTimeout(()=>m.replaceChildren(),cls==='err'?12000:8000); } }
 function load(objs,file){
   if(!objs.length||!('Tiêu đề' in objs[0])||!('Trạng thái' in objs[0])) throw new Error(file+': không có các cột Tiêu đề / Trạng thái của file danh sách sự vụ OPS.');
   const recs=prepareRecs(objs,file); let n=0;
@@ -1138,7 +1186,7 @@ async function fromDrive(auto){
   const btn=$('gd'); const src=await driveSource();
   if(!src){ if(!auto) msg('Chưa kết nối được Google Drive ở trang này.','err'); return; }
   if(btn.disabled) return;
-  btn.disabled=true; const old=btn.textContent; btn.textContent='Đang đọc Drive…';
+  btn.disabled=true; const lb=btn.querySelector('.lbl')||btn; const old=lb.textContent; lb.textContent='Đang đọc Drive…';
   try{
     msg('Đang xem thư mục Google Drive…');
     let files=(await src.list()).filter(f=>(f.mimeType===GS||/\.xlsx?$/i.test(f.title||''))&&!/^~\$/.test(f.title||''))
@@ -1155,12 +1203,10 @@ async function fromDrive(auto){
     }
     if(done.length){ gdSeen.set(seen); memo.set(false); SEL=null; showMonth(); saveStore(); if(!auto) go(0); }
     msg('Google Drive: '+done.map(d=>`${d.file} (${d.sheets.length>1?d.sheets.join(', ')+', ':''}${fmt(d.n)} ticket, tháng ${d.ms.join(', ')})`).concat(bad).join(' · '),bad.length?'err':'ok');
-  }catch(e){ msg(e&&e.code?gdErr(e):'Google Drive: '+(e&&e.message||e),'err'); }
-  finally{ btn.disabled=false; btn.textContent=old; }
+  }catch(e){ if(auto){ msg(''); return; } const t=e&&e.code?gdErr(e):(e&&e.message||String(e)); msg(/failed to fetch|network/i.test(t)?'Không kết nối được Google Drive. Hãy đăng nhập claude.ai rồi thử lại, hoặc dùng "Nạp file Excel".':(/^Google Drive/.test(t)?t:'Google Drive: '+t),'err'); }
+  finally{ btn.disabled=false; lb.textContent=old; }
 }
 $('gd').onclick=()=>fromDrive(false);
-$('menu').querySelector('.mlist').addEventListener('click',e=>{ if(e.target.closest('.btn')) setTimeout(()=>{$('menu').open=false;},0); });
-document.addEventListener('click',e=>{ if(!$('menu').contains(e.target)) $('menu').open=false; });
 if(!(window.claude&&window.claude.use)&&!GD_API_KEY) $('gd').hidden=true;   // web riêng chưa có khóa API thì không đọc được Drive
 function readOne(f){
   return new Promise((ok,no)=>{ const rd=new FileReader();
@@ -1226,4 +1272,5 @@ $('dl').onclick=async()=>{
 })();
 </script>
 
+</body></html>
 </body></html>
