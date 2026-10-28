@@ -233,7 +233,7 @@ thead th{position:sticky;top:0;background:var(--panel);z-index:1}
 #tNv tr.grp2 th{text-align:center;font-size:11px;letter-spacing:.05em;border-bottom:0;padding-bottom:2px;top:0}
 #tNv tr.grp2 th.gsc{box-shadow:inset 0 -3px 0 var(--s2)} #tNv tr.grp2 th.gbt{box-shadow:inset 0 -3px 0 var(--s1)} #tNv tr.grp2 th.gall{box-shadow:inset 0 -3px 0 var(--brand);color:var(--ink)}
 #tNv thead tr.grp2+tr th{top:24px}
-#tNv .hall{background:color-mix(in srgb,var(--brand) 7%,transparent)} #tNv td.b{font-weight:700}
+#tNv .hsc,#tNv tr.grp2 th.gsc{background:color-mix(in srgb,var(--s2) 9%,transparent)} #tNv .hbt,#tNv tr.grp2 th.gbt{background:color-mix(in srgb,var(--s1) 9%,transparent)} #tNv .hall,#tNv tr.grp2 th.gall{background:color-mix(in srgb,var(--good) 10%,transparent)} #tNv tr.grp2 th.gall{box-shadow:inset 0 -3px 0 var(--good)!important} #tNv td.b{font-weight:700}
 /* bảng so sánh tháng */
 table.cmp{border-collapse:separate;border-spacing:0}
 table.cmp th,table.cmp td{border-bottom:1px solid var(--line)}
@@ -380,7 +380,7 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
         <label class="lsel"><span>Nhân viên</span><select id="nvSel"><option value="">Tất cả nhân viên</option></select></label>
         <label class="lsel"><span>Mã cửa hàng</span><input type="search" id="site" list="siteList" placeholder="Gõ mã hoặc tên" autocomplete="off"></label><datalist id="siteList"></datalist>
         <span class="nvsum" id="nvSum"></span></div>
-      <div class="tools"><div class="seg" id="segNv"><button aria-pressed="true" data-v="SC">Sửa chữa kỹ thuật</button><button data-v="BT">Bảo trì bảo dưỡng</button><button data-v="ALL">Cả hai (trung bình)</button></div>
+      <div class="tools"><div class="seg" id="segNv"><button aria-pressed="true" data-v="SC">Sửa chữa kỹ thuật</button><button data-v="BT">Bảo trì bảo dưỡng</button><button data-v="ALL">Tổng BTBD &amp; SCKT</button></div>
       <input type="search" id="q" placeholder="Tìm tên nhân viên"><span class="legend" id="nvNote"></span></div>
       <div class="tbl"><div id="store" hidden></div><table id="tNv"></table></div>
     </section>
@@ -610,12 +610,12 @@ function nvTable(){
   if(all){
     const h1=h.insertRow(); h1.className='grp2';
     const g=(txt,n,cls)=>{ const th=el('th',txt,cls); th.colSpan=n; h1.append(th); };
-    g('',3); g('Sửa chữa kỹ thuật',3,'gsc'); g('Bảo trì bảo dưỡng',3,'gbt'); g('Cả hai',5,'gall');
+    g('',3); g('Sửa chữa kỹ thuật',3,'gsc'); g('Bảo trì bảo dưỡng',3,'gbt'); g('Tổng BTBD & SCKT',5,'gall');
   }
   const hr=h.insertRow();
   const heads=all?['Miền','Đội trưởng','Nhân viên kỹ thuật','Tổng','% xong','Ngày TB','Tổng','% xong','Ngày TB','Tổng ticket','Tồn (chưa xong)','% hoàn thành','Ngày xử lý TB','Trễ SCKT']
                  :['Miền','Đội trưởng','Nhân viên kỹ thuật','Đã hoàn thành','Chưa','Tổng','% hoàn thành','Ngày xử lý TB','Trễ'];
-  heads.forEach((x,i)=>hr.append(el('th',x,(i<3?'l':'')+(all&&i>=9?' hall':''))));
+  heads.forEach((x,i)=>hr.append(el('th',x,(i<3?'l':'')+(all?(i>=9?' hall':i>=6?' hbt':i>=3?' hsc':''):''))));
   const b=t.createTBody(); let shown=0;
   for(const reg of REGIONS){
     const g=by(rows.filter(r=>r.reg===reg),r=>r.lead+'\u0001'+r.nv);
@@ -625,7 +625,7 @@ function nvTable(){
       tr.append(el('td',reg,'l'),el('td',leadName(l),'l'),el('td',nv,'l'));
       if(all){
         const s_=agg(v.filter(r=>!r.bt)), t_=agg(v.filter(r=>r.bt));
-        tr.append(el('td',fc(s_.n)),pctCell(s_.n?s_.done/s_.n:null),el('td',f2(s_.days)),el('td',fc(t_.n)),pctCell(t_.n?t_.done/t_.n:null),el('td',f2(t_.days)));
+        const cs=[el('td',fc(s_.n)),pctCell(s_.n?s_.done/s_.n:null),el('td',f2(s_.days)),el('td',fc(t_.n)),pctCell(t_.n?t_.done/t_.n:null),el('td',f2(t_.days))]; cs.forEach((c,j)=>c.classList.add(j<3?'hsc':'hbt')); tr.append(...cs);
         const c1=el('td',fc(a.n),'hall'); const c0=el('td',fc(a.pend),'hall'+(a.pend?' late':'')); const c2=pctCell(a.n?a.done/a.n:null); c2.classList.add('hall'); const c3=el('td',f2(a.days),'hall b'); const c4=el('td',fc(s_.late),'hall'+(s_.late?' late':''));
         tr.append(c1,c0,c2,c3,c4);
       } else tr.append(el('td',fc(a.done)),el('td',fc(a.pend),a.pend?'late':''),el('td',fc(a.n)),pctCell(a.n?a.done/a.n:null),el('td',f2(a.days)),el('td',fc(a.late),a.late?'late':''));
@@ -634,7 +634,7 @@ function nvTable(){
   const tot=agg(rows.filter(r=>!q||String(r.nv).toLowerCase().includes(q)));
   $('nvSum').replaceChildren(); if(sel.value||ns.value||site){ const sp=el('span',`${site?site:ns.value?ns.value:leadName(sel.value)}: ${shown} nhân viên · ${fc(tot.n)} ticket${DIV>1?'/tháng':''} · `); const red=el('b',`tồn ${fc(tot.pend)}`,tot.pend?'late':''); const r2=el('b',` · trễ SCKT ${fc(tot.late)}`,tot.late?'late':''); $('nvSum').append(sp,red,r2); }
   if(!shown){ const tr=b.insertRow(); const td=el('td','Không có nhân viên khớp với từ khóa','muted'); td.colSpan=heads.length; tr.append(td); }
-  $('nvNote').textContent=all?'Ngày xử lý TB "Cả hai" = trung bình số ngày xử lý của tất cả ticket đã xong (SCKT và BTBD) của nhân viên đó.':'';
+  $('nvNote').textContent=all?'Ngày xử lý TB "Tổng BTBD & SCKT" = trung bình số ngày xử lý của tất cả ticket đã xong (SCKT và BTBD) của nhân viên đó.':'';
 }
 
 // ---------------------------------------------------------------- nhiều tháng: kho ticket + so sánh
