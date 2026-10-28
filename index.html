@@ -258,20 +258,29 @@ table.cmp tr.grp.sc td{box-shadow:inset 4px 0 0 var(--s2)}
 .dlt.pill.up{background:color-mix(in srgb,var(--good) 14%,transparent)} .dlt.pill.down{background:color-mix(in srgb,var(--badt) 14%,transparent)}
 .cmp-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);align-items:center}
 .cmp-legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.menu{position:relative;margin-left:auto}
+.menu>summary{list-style:none;user-select:none}
+.menu>summary::-webkit-details-marker{display:none}
+.menu .mlist{position:absolute;right:0;top:calc(100% + 6px);z-index:50;min-width:210px;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:10px;background:var(--brand);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.menu .mlist .btn{text-align:left;width:100%}
+.menu .mlist .btn[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <header class="top" id="hdr"><div class="wrap">
   <div class="ttlbox">
     <h1 id="ttl">Ticket kỹ thuật tháng —</h1>
-    <div class="sub" id="sub">Đang tải dữ liệu…</div>
+    <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
-  <div class="actions">
+  <details class="actions menu" id="menu">
+    <summary class="btn ghost">Chức năng ▾</summary>
+    <div class="mlist">
     <button class="btn ghost" id="gd" type="button" title="Đọc các file Excel trong thư mục Google Drive &quot;FILE THO TICKET&quot; (mỗi sheet một tháng)">Lấy từ Google Drive</button>
     <label class="btn ghost" for="file" id="pick">Nạp file các tháng</label>
     <button class="btn ghost" id="clr" type="button" hidden>Xóa dữ liệu</button>
     <button class="btn primary" id="dl" type="button" hidden>Tải Excel</button>
-  </div>
+    </div>
+  </details>
 </div></header>
 
 <nav class="pnav" id="pnav" aria-label="Các trang"><div class="wrap">
@@ -1150,6 +1159,8 @@ async function fromDrive(auto){
   finally{ btn.disabled=false; btn.textContent=old; }
 }
 $('gd').onclick=()=>fromDrive(false);
+$('menu').querySelector('.mlist').addEventListener('click',e=>{ if(e.target.closest('.btn')) setTimeout(()=>{$('menu').open=false;},0); });
+document.addEventListener('click',e=>{ if(!$('menu').contains(e.target)) $('menu').open=false; });
 if(!(window.claude&&window.claude.use)&&!GD_API_KEY) $('gd').hidden=true;   // web riêng chưa có khóa API thì không đọc được Drive
 function readOne(f){
   return new Promise((ok,no)=>{ const rd=new FileReader();
