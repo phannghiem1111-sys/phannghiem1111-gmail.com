@@ -260,7 +260,8 @@ table.cmp tr.grp.sc td{box-shadow:inset 4px 0 0 var(--s2)}
 .spark{display:block} .spark .sl{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round} .spark .sd{fill:var(--accent);stroke:var(--panel);stroke-width:1.5}
 .dlt.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-weight:600;background:color-mix(in srgb,var(--muted) 12%,transparent)}
 .dlt.pill.up{background:color-mix(in srgb,var(--good) 14%,transparent)} .dlt.pill.down{background:color-mix(in srgb,var(--badt) 14%,transparent)}
-.cmp-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);align-items:center}
+.cArea .cmp-legend{margin-left:auto}
+.cmp-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);align-items:center}
 .cmp-legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -362,9 +363,9 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
   </section>
 
   <section class="page p-one" data-title="So sánh tháng" id="pg-cmp" hidden>
-    <section class="card"><div><h2>So sánh các tháng</h2><p class="cap">Bấm vào tên tháng để xem chi tiết tháng đó. Tháng chưa kết thúc được tính đến ngày có dữ liệu và không tô màu.</p><div class="cmp-legend"><span><i style="background:color-mix(in srgb,var(--good) 26%,transparent)"></i>Tốt nhất trong năm</span><span><i style="background:color-mix(in srgb,var(--badt) 26%,transparent)"></i>Kém nhất trong năm</span><span><i style="background:color-mix(in srgb,var(--s1) 13%,transparent);box-shadow:inset 2px 0 0 var(--s1),inset -2px 0 0 var(--s1)"></i>Tháng đang xem</span></div>
+    <section class="card"><div><h2 title="Bấm vào tên tháng để xem chi tiết tháng đó. Tháng chưa kết thúc được tính đến ngày có dữ liệu và không tô màu.">So sánh các tháng</h2>
       <div class="area cArea"><span class="flab">Khu vực</span><div class="seg" id="xReg"><button data-v="" aria-pressed="true">Cả nước</button><button data-v="Miền Bắc">Miền Bắc</button><button data-v="Miền Nam">Miền Nam</button></div>
-      <label class="lsel"><span>Đội trưởng</span><select id="xLead"><option value="">Tất cả đội trưởng</option></select></label><span class="legend" id="xLab"></span></div></div><div class="tbl"><table id="tCmp" class="cmp"></table></div></section>
+      <label class="lsel"><span>Đội trưởng</span><select id="xLead"><option value="">Tất cả đội trưởng</option></select></label><span class="legend" id="xLab"></span><div class="cmp-legend"><span><i style="background:color-mix(in srgb,var(--good) 26%,transparent)"></i>Tốt nhất trong năm</span><span><i style="background:color-mix(in srgb,var(--badt) 26%,transparent)"></i>Kém nhất trong năm</span><span><i style="background:color-mix(in srgb,var(--s1) 13%,transparent);box-shadow:inset 2px 0 0 var(--s1),inset -2px 0 0 var(--s1)"></i>Tháng đang xem</span></div></div></div><div class="tbl"><table id="tCmp" class="cmp"></table></div></section>
   </section>
 
   <section class="page p-one" data-title="Theo tỉnh" id="pg-prov" hidden>
