@@ -425,11 +425,10 @@
         <button type="button" id="btn-today" class="btn btn-ghost"><i class="fa-regular fa-calendar" aria-hidden="true"></i>Hôm nay</button>
       </div>
 
-
       <section class="card" id="tk-analysis" aria-label="Phân tích sự vụ">
         <div class="card-head">
           <h2><i class="fa-solid fa-chart-bar" aria-hidden="true"></i> Phân tích sự vụ</h2>
-          <span class="muted small">Tổng hợp từ các sự vụ đã tạo ở tab Sự vụ</span>
+          <span id="tk-sync" class="muted small">Tổng hợp từ các sự vụ đã lưu ở tab Sự vụ</span>
         </div>
         <div id="kpis-tk" class="kpis kpis-tk" aria-label="Số liệu sự vụ"></div>
         <div id="tk-alerts"></div>
@@ -442,37 +441,6 @@
           <div><h3>Theo nhà thầu</h3><div class="table-wrap" id="tk-by-contractor"></div></div>
         </div>
       </section>
-
-      <div id="kpis" class="kpis"></div>
-
-      <div class="grid2">
-        <div id="warnings" class="card"></div>
-        <div id="checks" class="card"></div>
-      </div>
-
-      <div class="card">
-        <h2><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Cửa hàng còn bảo hành</h2>
-        <div id="store-list"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h2>Yêu cầu từ file Excel</h2>
-          <div class="seg" role="group" aria-label="Chọn nhóm yêu cầu">
-            <button type="button" class="seg-btn is-active" data-req="open" aria-pressed="true">Đang xử lý <span id="open-count" class="count">0</span></button>
-            <button type="button" class="seg-btn" data-req="closed" aria-pressed="false">Đã đóng <span id="closed-count" class="count">0</span></button>
-          </div>
-        </div>
-        <p class="muted small req-meta">Dữ liệu từ hồ sơ bảo hành (file Excel do P.XD cập nhật). Sự vụ tạo trên dashboard nằm ở mục Sự vụ phía trên.</p>
-        <p id="req-meta" class="muted small req-meta"></p>
-        <div id="req-wrap" class="table-wrap"></div>
-      </div>
-
-      <div class="card">
-        <h2><i class="fa-solid fa-chart-bar" aria-hidden="true"></i> Yêu cầu theo nhóm hạng mục</h2>
-        <p class="muted small" style="margin:0 0 12px">Thanh đỏ đậm là phần đang mở. Số bên phải là đang mở / tổng số yêu cầu.</p>
-        <div id="category-bars"></div>
-      </div>
     </section>
   </main>
 

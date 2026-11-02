@@ -22,7 +22,47 @@
     return { tickets: [], events: [] };
   }
 
+  /** Bỏ giá trị undefined, đổi NaN/Infinity thành null: db chỉ nhận JSON hợp lệ. */
+  function toPlain(doc) {
+    return JSON.parse(JSON.stringify(doc));
+  }
+
+  /** Thông báo tiếng Việt cho lỗi ghi db, kèm mã lỗi để dễ tra. */
+  function writeErrorMessage(err) {
+    const code = (err && err.code) || 'lỗi';
+    const why = {
+      invalid_argument: 'Tài khoản không có quyền ghi hoặc dữ liệu không hợp lệ (cần quyền Contributor trở lên).',
+      quota_exceeded: 'Cơ sở dữ liệu đã đầy.',
+      resource_exhausted: 'Ghi quá nhanh, chờ vài giây rồi thử lại.',
+      revoked: 'Quyền truy cập vừa bị thu hồi, tải lại trang.',
+      not_granted: 'Trang chưa được cấp quyền lưu dữ liệu.',
+    }[code];
+    return `Chưa lưu được vào cơ sở dữ liệu (${code}). ${why || 'Thử lại sau giây lát.'}`;
+  }
+
+  /** Bộ nhớ tạm khi trình duyệt chặn localStorage: vẫn dùng được trong phiên mở trang. */
+  function memoryStorage() {
+    const data = {};
+    return {
+      getItem: (k) => (k in data ? data[k] : null),
+      setItem: (k, v) => {
+        data[k] = String(v);
+      },
+    };
+  }
+
+  /** Đọc window.localStorage có thể ném lỗi (iframe sandbox, chặn cookie), nên phải bọc lại. */
+  function safeLocalStorage() {
+    try {
+      const s = GLOBAL.localStorage;
+      return s && typeof s.getItem === 'function' ? s : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function localStore(storage) {
+    storage = storage || memoryStorage();
     const read = () => {
       try {
         const parsed = JSON.parse(storage.getItem(LOCAL_KEY));
@@ -41,6 +81,12 @@
     };
     const listeners = new Set();
     const emit = () => listeners.forEach((fn) => fn(read()));
+    // Tab khác của cùng trình duyệt lưu sự vụ: cập nhật luôn tab này (dashboard đang mở chẳng hạn)
+    if (typeof GLOBAL.addEventListener === 'function') {
+      GLOBAL.addEventListener('storage', (e) => {
+        if (e.key === LOCAL_KEY || e.key === null) emit();
+      });
+    }
     return {
       mode: 'local',
       subscribe(fn) {
@@ -50,13 +96,13 @@
       },
       async createTicket(ticket) {
         const state = read();
-        state.tickets.push(ticket);
+        state.tickets.push(toPlain(ticket));
         if (!write(state)) throw new Error('Trình duyệt không lưu được sự vụ. Kiểm tra quyền lưu dữ liệu của trình duyệt.');
         emit();
       },
       async addEvent(event) {
         const state = read();
-        state.events.push(event);
+        state.events.push(toPlain(event));
         if (!write(state)) throw new Error('Trình duyệt không lưu được cập nhật. Kiểm tra quyền lưu dữ liệu của trình duyệt.');
         emit();
       },
@@ -71,7 +117,7 @@
     let state = emptyState();
     let loadError = null;
     const listeners = new Set();
-    const emit = () => listeners.forEach((fn) => fn(state));
+    const emit = () => listeners.forEach((fn) => fn({ ...state, error: loadError }));
     const toRows = (snap) => snap.docs.filter((d) => d.exists).map((d) => d.data()).filter(Boolean);
 
     db.collection(TICKETS).onSnapshot(
@@ -95,6 +141,28 @@
       }
     );
 
+    /** Ghi một tài liệu, lỗi tạm thời (unavailable) thì thử lại một lần. Sau khi ghi xong cập nhật ngay. */
+    async function write(collection, doc, mergeKey) {
+      const plain = toPlain(doc);
+      const ref = db.collection(collection).doc(String(plain.id));
+      try {
+        try {
+          await ref.set(plain);
+        } catch (e) {
+          if (!e || e.code !== 'unavailable') throw e;
+          await new Promise((r) => setTimeout(r, 400 + Math.random() * 600));
+          await ref.set(plain);
+        }
+      } catch (e) {
+        const err = new Error(writeErrorMessage(e));
+        err.code = e && e.code;
+        throw err;
+      }
+      // Không chờ onSnapshot: dashboard cập nhật ngay, snapshot sau đó sẽ thay bằng dữ liệu db
+      state = { ...state, [mergeKey]: [...state[mergeKey].filter((x) => x.id !== plain.id), plain] };
+      emit();
+    }
+
     return {
       mode: 'shared',
       subscribe(fn) {
@@ -103,10 +171,10 @@
         return () => listeners.delete(fn);
       },
       async createTicket(ticket) {
-        await db.collection(TICKETS).doc(ticket.id).set(ticket);
+        await write(TICKETS, ticket, 'tickets');
       },
       async addEvent(event) {
-        await db.collection(EVENTS).doc(event.id).set(event);
+        await write(EVENTS, event, 'events');
       },
     };
   }
@@ -115,17 +183,19 @@
    * Chọn chế độ lưu. claude.use("db") trả null khi không được cấp quyền, khi đó dùng bộ nhớ trình duyệt.
    * Trả về Promise, không bao giờ ném lỗi.
    */
-  async function openStore({ claude = GLOBAL.claude, storage = GLOBAL.localStorage } = {}) {
+  async function openStore({ claude = GLOBAL.claude, storage = safeLocalStorage() } = {}) {
+    const inViewer = Boolean(claude && typeof claude.use === 'function');
     try {
-      if (claude && typeof claude.use === 'function') {
+      if (inViewer) {
         const db = await claude.use('db');
         if (db) return sharedStore(db);
       }
     } catch (e) {
       // Không có db: tiếp tục sang chế độ trình duyệt
     }
-    return localStore(storage);
+    // dbMissing: đang mở trên claude.ai nhưng không có db, sự vụ KHÔNG vào cơ sở dữ liệu dùng chung
+    return { ...localStore(storage), dbMissing: inViewer };
   }
 
-  return { openStore, localStore, sharedStore, TICKETS, EVENTS };
+  return { openStore, localStore, sharedStore, safeLocalStorage, toPlain, writeErrorMessage, TICKETS, EVENTS };
 });
