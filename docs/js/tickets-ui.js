@@ -64,6 +64,13 @@
     refresh();
   }
 
+  /** Phần đuôi thông báo sau khi lưu: nói rõ đã vào cơ sở dữ liệu dùng chung hay chỉ trên trình duyệt. */
+  function savedWhere() {
+    if (S.mode === 'shared') return 'Đã lưu vào cơ sở dữ liệu dùng chung, dashboard đã cập nhật.';
+    if (S.dbMissing) return 'CHỈ lưu trên trình duyệt này: trang chưa kết nối được cơ sở dữ liệu, tải lại trang rồi kiểm tra.';
+    return 'Đã lưu trên trình duyệt này, dashboard đã cập nhật.';
+  }
+
   function storeReady(key) {
     if (store) return true;
     setMsg(key, 'Đang tải nơi lưu sự vụ, thử lại sau giây lát.');
@@ -135,7 +142,7 @@
 
   async function createTicketFromForm(e) {
     e.preventDefault();
-    if (!S.canWrite) return;
+    if (!S.canWrite) return setMsg('form', 'Tài khoản này chỉ xem được, không lưu được sự vụ.');
     const model = D.getModel();
     const asOf = D.getAsOf();
     const storeCode = el('f-tk-store').value;
@@ -170,7 +177,7 @@
       S.confirmClose = false;
       el('tk-form').reset();
       el('f-tk-deadline').value = addDays(asOf, 7);
-      setMsg('form', `Đã tạo sự vụ ${ticket.id}. Dashboard đã cập nhật.`);
+      setMsg('form', `Đã tạo sự vụ ${ticket.id}. ${savedWhere()}`);
       applySaved({ ticket, event: ev });
       el('ticket-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
@@ -192,8 +199,10 @@
     });
     const modeText =
       S.mode === 'shared'
-        ? 'Sự vụ dùng chung: mọi người có quyền xem đều thấy và cập nhật.'
-        : 'Sự vụ chỉ lưu trên trình duyệt này. Mở bằng link claude.ai để nhiều người cùng dùng.';
+        ? 'Sự vụ dùng chung: lưu trong cơ sở dữ liệu, mọi người có quyền xem đều thấy và cập nhật.'
+        : S.dbMissing
+          ? 'Chưa kết nối được cơ sở dữ liệu: sự vụ tạo lúc này chỉ nằm trên trình duyệt này. Tải lại trang.'
+          : 'Sự vụ chỉ lưu trên trình duyệt này. Mở bằng link claude.ai để nhiều người cùng dùng.';
     el('tk-mode').textContent = S.error ? `Không tải được sự vụ (${S.error.code || 'lỗi'}). ${modeText}` : modeText;
 
     const list = D.T.filterViews(all, S.filter);
@@ -343,7 +352,7 @@
         reportedDate: el('f-st-date').value,
       });
       await store.addEvent(ev);
-      S.msg.detail = 'Đã ghi nhận tình trạng.';
+      S.msg.detail = `Đã ghi nhận tình trạng. ${savedWhere()}`;
       applySaved({ event: ev });
     } catch (err) {
       setMsg('detail', err.message || 'Không ghi nhận được tình trạng.');
@@ -358,7 +367,7 @@
       const ev = D.T.buildEvent(v.id, type, { by, atIso: nowFor(D.getAsOf()) });
       await store.addEvent(ev);
       S.confirmClose = false;
-      S.msg.detail = type === 'close' ? 'Đã đóng sự vụ.' : 'Đã ghi nhận đã gửi nhà thầu.';
+      S.msg.detail = `${type === 'close' ? 'Đã đóng sự vụ.' : 'Đã ghi nhận đã gửi nhà thầu.'} ${savedWhere()}`;
       applySaved({ event: ev });
     } catch (err) {
       setMsg('detail', err.message || 'Không ghi nhận được.');
@@ -426,7 +435,13 @@
   function renderSyncLine(all) {
     const box = el('tk-sync');
     if (!box) return;
-    const where = !store ? 'Đang tải sự vụ đã lưu' : S.mode === 'shared' ? 'Sự vụ dùng chung' : 'Sự vụ lưu trên trình duyệt này';
+    const where = !store
+      ? 'Đang tải sự vụ đã lưu'
+      : S.mode === 'shared'
+        ? 'Sự vụ từ cơ sở dữ liệu dùng chung'
+        : S.dbMissing
+          ? 'Chưa kết nối cơ sở dữ liệu, sự vụ trên trình duyệt này'
+          : 'Sự vụ lưu trên trình duyệt này';
     const at = S.updatedAt
       ? `, cập nhật ${String(S.updatedAt.getHours()).padStart(2, '0')}:${String(S.updatedAt.getMinutes()).padStart(2, '0')}`
       : '';
@@ -623,6 +638,7 @@
       storage: window.WarrantyStore.safeLocalStorage(),
     });
     S.mode = opened.mode;
+    S.dbMissing = Boolean(opened.dbMissing);
     store = opened;
     store.subscribe((state) => {
       S.tickets = state.tickets || [];
