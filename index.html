@@ -20,6 +20,45 @@
   #tAge tbody tr:hover td,#tBT tbody tr:hover td,#tSC tbody tr:hover td,#tProv tbody tr:hover td{background-color:color-mix(in srgb,var(--accent) 9%,transparent)}
 }
 @media (prefers-reduced-motion:reduce){.page.enter *{animation:none!important}.kpi,.charts>.card,.stbox,.agec{transform:none!important}}
+/* ---- thẻ hồ sơ nhân viên */
+.nvlink{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;border-bottom:1px dashed color-mix(in srgb,var(--accent) 70%,transparent);transition:color .15s}
+.nvlink:hover,.nvlink:focus-visible{color:var(--accent);outline:none}
+tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} tr.nvon td:first-child{box-shadow:inset 3px 0 0 var(--accent),inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)}
+#nvCard{box-sizing:border-box;position:sticky;left:0;max-width:calc(100vw - 80px);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:14px;margin:2px 0 14px;padding:14px 16px;display:grid;gap:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,var(--panel)),var(--panel) 55%);box-shadow:0 10px 28px color-mix(in srgb,var(--ink) 10%,transparent);animation:cardIn .45s cubic-bezier(.2,.75,.2,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+#nvCard .ph{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+#nvCard .av0{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:700 16px var(--f-body);color:#fff;background:var(--brand);flex:none}
+#nvCard .pn{min-width:0;flex:1} #nvCard .pn b{display:block;font-size:18px} #nvCard .pn span{font-size:12.5px;color:var(--muted)}
+#nvCard .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font:700 13px var(--f-body);animation:popIn .6s .15s cubic-bezier(.2,.75,.2,1) backwards}
+#nvCard .badge.rk{background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--ink)}
+#nvCard .badge.good{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}
+#nvCard .badge.bad{background:color-mix(in srgb,var(--badt) 14%,transparent);color:var(--badt)}
+#nvCard .badge.mid{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--ink)}
+#nvCard .x{border:1px solid var(--line);background:var(--panel);color:var(--muted);width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer}
+#nvCard .x:hover{color:var(--ink);border-color:var(--ink)}
+#nvCard .pk{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+#nvCard .pk div{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--panel);animation:upIn .5s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*60ms + 80ms);transition:transform .2s,border-color .2s}
+#nvCard .pk div:hover{transform:translateY(-3px);border-color:var(--accent)}
+#nvCard .pk small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+#nvCard .pk strong{font:700 22px var(--f-body);font-variant-numeric:tabular-nums}
+#nvCard .pk em{display:block;font-style:normal;font-size:11.5px;color:var(--muted)}
+#nvCard .cmpg{display:grid;grid-template-columns:minmax(150px,1.2fr) 80px 80px minmax(140px,2fr) 118px;gap:6px 12px;align-items:center;font-size:13px}
+#nvCard .cmpg .hd{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+#nvCard .cmpg .n{text-align:right;font-variant-numeric:tabular-nums} #nvCard .cmpg .n.me{font-weight:700}
+#nvCard .cmpg .sec{grid-column:1/-1;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:7px;color:#fff;margin-top:4px}
+#nvCard .cmpg .sec.sc{background:var(--s2)} #nvCard .cmpg .sec.bt{background:var(--s1)} #nvCard .cmpg .sec.al{background:var(--brand)}
+#nvCard .db{display:grid;gap:3px} #nvCard .db i{display:block;height:7px;border-radius:4px;width:0;transition:width .8s cubic-bezier(.2,.75,.2,1)}
+#nvCard .db i.me{background:var(--accent)} #nvCard .db i.tm{background:color-mix(in srgb,var(--muted) 45%,transparent)}
+#nvCard .vd{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;text-align:center;white-space:nowrap}
+#nvCard .vd.good{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)} #nvCard .vd.bad{background:color-mix(in srgb,var(--badt) 13%,transparent);color:var(--badt)} #nvCard .vd.eq{background:color-mix(in srgb,var(--muted) 12%,transparent);color:var(--muted)}
+#nvCard .lg2{display:flex;gap:14px;font-size:12px;color:var(--muted)} #nvCard .lg2 i{display:inline-block;width:12px;height:7px;border-radius:3px;margin-right:5px}
+#nvCard .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+#nvCard .sum div{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5} #nvCard .sum h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+#nvCard .sum .pos{background:color-mix(in srgb,var(--good) 8%,transparent)} #nvCard .sum .pos h4{color:var(--good)}
+#nvCard .sum .neg{background:color-mix(in srgb,var(--badt) 8%,transparent)} #nvCard .sum .neg h4{color:var(--badt)}
+#nvCard .sum ul{margin:0;padding-left:18px}
+@media (max-width:720px){#nvCard{max-width:calc(100vw - 62px);padding:12px}#nvCard .pk{grid-template-columns:repeat(2,minmax(0,1fr))}#nvCard>*{min-width:0}#nvCard .pn{flex:1 1 calc(100% - 60px)}#nvCard .pk div{min-width:0}#nvCard .vd{font-size:11px;padding:3px 6px}#nvCard .cmpg{grid-template-columns:minmax(0,1fr) 50px 50px 78px;gap:6px 6px;font-size:12.5px}#nvCard .cmpg .bar{display:none}#nvCard .cmpg .hd.bar{display:none}}
+@media (prefers-reduced-motion:reduce){#nvCard,#nvCard *{animation:none!important}#nvCard .db i{transition:none}}
 </style></head><body>
 <title>Ticket kỹ thuật Winmart</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -468,7 +507,7 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
         <span class="nvsum" id="nvSum"></span></div>
       <div class="tools"><div class="seg" id="segNv"><button aria-pressed="true" data-v="SC">Sửa chữa kỹ thuật</button><button data-v="BT">Bảo trì bảo dưỡng</button><button data-v="ALL">Tổng BTBD &amp; SCKT</button></div>
       <input type="search" id="q" placeholder="Tìm tên nhân viên"><span class="legend" id="nvNote"></span></div>
-      <div class="tbl"><div id="store" hidden></div><table id="tNv"></table></div>
+      <div class="tbl" id="nvTbl"><div id="nvCard" hidden></div><div id="store" hidden></div><table id="tNv"></table></div>
     </section>
   </section>
 
@@ -713,7 +752,9 @@ function nvTable(){
     for(const k of keys){ const [l,nv]=k.split('\u0001'); if(q&&!String(nv).toLowerCase().includes(q)) continue;
       const v=g.get(k); const a=agg(v); const tr=b.insertRow(); shown++;
       const ln=String(leadName(l)).normalize('NFC').replace(/\s+/g,' ').trim(); if(ln!==prevL){ if(prevL!==null) tr.classList.add('lead1'); prevL=ln; li++; } tr.style.setProperty('--rowbg',`color-mix(in srgb,hsl(${LEAD_HUE[li%LEAD_HUE.length]} 75% 55%) 11%,var(--panel))`);
-      tr.append(el('td',reg,'l'),el('td',leadName(l),'l'),el('td',nv,'l'));
+      const nb=el('button',nv,'nvlink'); nb.type='button'; nb.title='Bấm để xem hồ sơ và so sánh với đội'; nb.onclick=()=>openNv(nv,l); const tdn=el('td',null,'l'); tdn.append(nb);
+      if(NVP&&NVP.nv===nv&&NVP.lead===l) tr.classList.add('nvon');
+      tr.append(el('td',reg,'l'),el('td',leadName(l),'l'),tdn);
       if(all){
         const s_=agg(v.filter(r=>!r.bt)), t_=agg(v.filter(r=>r.bt));
         const cs=[el('td',fc(s_.n)),pctCell(s_.n?s_.done/s_.n:null),el('td',f2(s_.days)),el('td',fc(t_.n)),pctCell(t_.n?t_.done/t_.n:null),el('td',f2(t_.days))]; cs.forEach((c,j)=>c.classList.add(j<3?'hsc':'hbt')); tr.append(...cs);
@@ -725,7 +766,71 @@ function nvTable(){
   const tot=agg(rows.filter(r=>!q||String(r.nv).toLowerCase().includes(q)));
   $('nvSum').replaceChildren(); if(sel.value||ns.value||site){ const sp=el('span',`${site?site:ns.value?ns.value:leadName(sel.value)}: ${shown} nhân viên · ${fc(tot.n)} ticket${DIV>1?'/tháng':''} · `); const red=el('b',`tồn ${fc(tot.pend)}`,tot.pend?'late':''); const r2=el('b',` · trễ SCKT ${fc(tot.late)}`,tot.late?'late':''); $('nvSum').append(sp,red,r2); }
   if(!shown){ const tr=b.insertRow(); const td=el('td','Không có nhân viên khớp với từ khóa','muted'); td.colSpan=heads.length; tr.append(td); }
+  nvCard();
   $('nvNote').textContent=all?'Ngày xử lý TB "Tổng BTBD & SCKT" = trung bình số ngày xử lý của tất cả ticket đã xong (SCKT và BTBD) của nhân viên đó.':'';
+}
+
+// ---------------------------------------------------------------- hồ sơ nhân viên: so với trung bình đội
+let NVP=null;
+function openNv(nv,lead){ NVP=NVP&&NVP.nv===nv&&NVP.lead===lead?null:{nv,lead}; nvTable(); if(NVP){ const t=$('nvTbl'); t.scrollTo({top:0,behavior:'smooth'}); } }
+function nvCard(){
+  const box=$('nvCard'); box.replaceChildren();
+  if(!NVP||!M){ box.hidden=true; return; }
+  const {nv,lead}=NVP; const team=M.rows.filter(r=>r.lead===lead); const me=team.filter(r=>r.nv===nv);
+  if(!me.length){ NVP=null; box.hidden=true; return; }
+  box.hidden=false; box.style.animation='none'; void box.offsetWidth; box.style.animation='';
+  const staff=[...new Set(team.map(r=>r.nv))].filter(x=>x!=='(Chưa có)'); const N=Math.max(1,staff.length);
+  const st=rows=>{ const S=rows.filter(r=>!r.bt), B=rows.filter(r=>r.bt), a=agg(rows), s=agg(S), b=agg(B);
+    return {n:a.n,pend:a.pend,days:a.days,rate:a.n?a.done/a.n:null, scN:s.n,scRate:s.n?s.done/s.n:null,scDays:s.days,late:s.late,lateRate:s.done?s.late/s.done:null, btN:b.n,btRate:b.n?b.done/b.n:null,btDays:b.days}; };
+  const A=st(me), T=st(team);
+  // TB đội: tỷ lệ và ngày lấy chung cả đội, số lượng chia đều cho số nhân viên
+  const TP={n:T.n/N,pend:T.pend/N,scN:T.scN/N,btN:T.btN/N,late:T.late/N};
+  const reg=me[0].reg, per=M.avg?M.lab:M.lab;
+  // xếp hạng trong đội theo điểm tổng hợp
+  const all=staff.map(x=>({x,s:st(team.filter(r=>r.nv===x))}));
+  const rankBy=(f,hi)=>{ const v=all.filter(o=>f(o.s)!=null); v.sort((a,b)=>hi?f(b.s)-f(a.s):f(a.s)-f(b.s)); const m=new Map(); v.forEach((o,k)=>m.set(o.x,v.length>1?1-k/(v.length-1):1)); return m; };
+  const ks=[rankBy(o=>o.n,true),rankBy(o=>o.rate,true),rankBy(o=>o.scRate,true),rankBy(o=>o.days,false),rankBy(o=>o.lateRate,false)];
+  const score=x=>{ const v=ks.map(m=>m.get(x)).filter(v=>v!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; };
+  const order=staff.slice().sort((a,b)=>score(b)-score(a)); const rank=order.indexOf(nv)+1;
+  // chỉ số so sánh: [nhóm, tên, giá trị NV, TB đội, định dạng, chiều tốt (1 cao tốt, -1 thấp tốt, 0 khối lượng), ngưỡng]
+  const fv=v=>fc(v), fr=v=>v==null?'—':(M.avg?(v/DIV):v).toLocaleString('vi-VN',{maximumFractionDigits:1});
+  const MET=[
+    ['sc','Số ticket SCKT',A.scN,TP.scN,fr,0,.1],['sc','% hoàn thành SCKT',A.scRate,T.scRate,pc,1,.02],['sc','Ngày xử lý TB SCKT',A.scDays,T.scDays,f2,-1,.1],['sc','Tỷ lệ trễ leadtime SCKT',A.lateRate,T.lateRate,pc,-1,.02],
+    ['bt','Số ticket BTBD',A.btN,TP.btN,fr,0,.1],['bt','% hoàn thành BTBD',A.btRate,T.btRate,pc,1,.02],['bt','Ngày xử lý TB BTBD',A.btDays,T.btDays,f2,-1,.1],
+    ['al','Tổng ticket BTBD + SCKT',A.n,TP.n,fr,0,.1],['al','Tồn (chưa xong)',A.pend,TP.pend,fr,-1,.15],['al','% hoàn thành chung',A.rate,T.rate,pc,1,.02]];
+  const judge=(v,t,dir,th,isPct)=>{ if(v==null||t==null||!dir) return v==null||t==null?null:(v>t*(1+th)?'more':v<t*(1-th)?'less':'eq');
+    const d=isPct?v-t:(t?((v-t)/Math.abs(t)):v-t); if(Math.abs(d)<th) return 'eq'; return (d>0)===(dir>0)?'good':'bad'; };
+  let good=0,bad=0; const pos=[],neg=[];
+  // đầu thẻ
+  const ph=el('div',null,'ph'); const ini=nv.split(/\s+/).filter(Boolean); const av=el('div',(ini.length>1?ini[ini.length-2][0]:'')+(ini[ini.length-1]||'?')[0],'av0');
+  const pn=el('div',null,'pn'); pn.append(el('b',nv),el('span',`${leadName(lead)} · ${reg} · ${per} · đội có ${N} nhân viên`));
+  const cmpg=el('div',null,'cmpg'); ['Chỉ số','Nhân viên','TB đội','',"So với đội"].forEach((h,k)=>cmpg.append(el('div',h,'hd'+(k>0&&k<3?' n':'')+(k===3?' bar':''))));
+  let sec=''; const secName={sc:'Sửa chữa kỹ thuật',bt:'Bảo trì bảo dưỡng',al:'Tổng BTBD & SCKT'};
+  const bars=[];
+  for(const [g,lab,v,t,f,dir,th] of MET){
+    if(g!==sec){ sec=g; cmpg.append(el('div',secName[g],'sec '+g)); }
+    const isPct=f===pc; const j=judge(v,t,dir,th,isPct);
+    if(j==='good'){ good++; pos.push(`${lab}: ${f(v)} (đội ${f(t)})`); } if(j==='bad'){ bad++; neg.push(`${lab}: ${f(v)} (đội ${f(t)})`); }
+    const db=el('div',null,'db bar'); const i1=el('i',null,'me'), i2=el('i',null,'tm'); db.append(i1,i2); const mx=Math.max(v||0,t||0); bars.push([i1,mx?(v||0)/mx:0],[i2,mx?(t||0)/mx:0]);
+    const vt={good:'▲ Tốt hơn',bad:'▼ Kém hơn',eq:'= Ngang đội',more:'Nhiều hơn',less:'Ít hơn'}[j]||'—';
+    cmpg.append(el('div',lab),el('div',f(v),'n me'),el('div',f(t),'n'),db,el('div',vt,'vd '+(j==='good'?'good':j==='bad'?'bad':'eq')));
+  }
+  const verdict=good>=bad+2?['Tốt hơn mặt bằng đội','good']:bad>=good+2?['Cần cải thiện so với đội','bad']:['Ngang mặt bằng đội','mid'];
+  const rk=el('span',`Xếp hạng ${rank}/${N} trong đội`,'badge rk'); rk.title='Điểm tổng hợp: số ticket, % hoàn thành, % hoàn thành SCKT, ngày xử lý TB, tỷ lệ trễ SCKT';
+  const vb=el('span',verdict[0],'badge '+verdict[1]);
+  const x=el('button','×','x'); x.type='button'; x.setAttribute('aria-label','Đóng hồ sơ'); x.onclick=()=>{ NVP=null; nvTable(); };
+  ph.append(av,pn,rk,vb,x); box.append(ph);
+  // ô số chính
+  const pk=el('div',null,'pk'); let ki=0; const tile=(lab,val,sub)=>{ const d=el('div'); d.style.setProperty('--i',ki++); d.append(el('small',lab),el('strong',val)); if(sub) d.append(el('em',sub)); pk.append(d); };
+  tile(M.avg?'Ticket / tháng':'Tổng ticket',fr(A.n),`SCKT ${fr(A.scN)} · BTBD ${fr(A.btN)}`); tile('% hoàn thành',pc(A.rate),`đội ${pc(T.rate)}`); tile('Ngày xử lý TB',f2(A.days),`đội ${f2(T.days)}`);
+  tile('Trễ SCKT',fr(A.late),`${pc(A.lateRate)} số đã xử lý · đội ${pc(T.lateRate)}`); tile('Tồn',fr(A.pend),`TB đội ${fr(TP.pend)} / người`);
+  box.append(pk);
+  const lg=el('div',null,'lg2'); const l1=el('span'),l2=el('span'); const k1=el('i'),k2=el('i'); k1.style.background='var(--accent)'; k2.style.background='color-mix(in srgb,var(--muted) 45%,transparent)'; l1.append(k1,document.createTextNode(nv)); l2.append(k2,document.createTextNode('Trung bình đội')); lg.append(l1,l2); box.append(lg);
+  box.append(cmpg);
+  const sm=el('div',null,'sum'); const lst=(cls,h,arr,empty)=>{ const d=el('div',null,cls); d.append(el('h4',h)); if(arr.length){ const ul=el('ul'); arr.forEach(t=>ul.append(el('li',t))); d.append(ul); } else d.append(el('span',empty,'muted')); sm.append(d); };
+  lst('pos','Điểm mạnh so với đội',pos,'Chưa có chỉ số nào nổi trội hơn đội.'); lst('neg','Cần cải thiện',neg,'Không có chỉ số nào kém hơn đội.');
+  box.append(sm);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>bars.forEach(([i,w])=>i.style.width=Math.min(100,w*100)+'%')));
 }
 
 // ---------------------------------------------------------------- nhiều tháng: kho ticket + so sánh
@@ -1419,7 +1524,7 @@ seg('segNv',v=>{nvType=v; nvTable();});
 stPlace=[makeSw('stType','type'),makeSw('stReg','reg')];
 for(const id of ['aReg','xReg']) $(id).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; AREA={reg:b.dataset.v,lead:''}; reflow(); });
 for(const id of ['aLead','xLead']) $(id).addEventListener('change',e=>{ AREA.lead=e.target.value; reflow(); });
-$('q').addEventListener('input',nvTable); $('lead').addEventListener('change',nvTable); $('nvSel').addEventListener('change',nvTable);
+$('q').addEventListener('input',nvTable); $('lead').addEventListener('change',nvTable); $('nvSel').addEventListener('change',()=>{ const v=$('nvSel').value; if(v&&M){ const l=$('lead').value||mode(M.rows.filter(r=>r.nv===v).map(r=>r.lead)); NVP={nv:v,lead:l}; } else NVP=null; nvTable(); });
 $('site').addEventListener('input',nvTable);
 
 let dlReady=false, downloads=null;
