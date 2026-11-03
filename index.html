@@ -1,65 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0">
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}/* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
-@keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
-@keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
-@keyframes popIn{0%{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}100%{transform:none}}
-.page.enter .anim{animation:upIn .55s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms)}
-.page.enter .anim h2,.page.enter .anim h3,.page.enter .anim .cap,.page.enter .kpi .lab,.page.enter .agec .an{animation:leftIn .5s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms + 120ms)}
-.page.enter .kpi .val,.page.enter .agec .av{animation:popIn .6s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms + 180ms)}
-.kpi .val,.agec .av{transform-origin:left center;transition:transform .25s cubic-bezier(.2,.75,.2,1)}
-.kpi,.charts>.card,.stbox,.p-two>.card,.stack>.card,.agec{transition:transform .25s cubic-bezier(.2,.75,.2,1),box-shadow .25s,border-color .25s,opacity .25s}
-@media (hover:hover){
-  .kpi:hover,.charts>.card:hover,.stbox:hover{transform:translateY(-5px);box-shadow:0 14px 30px color-mix(in srgb,var(--ink) 15%,transparent);border-color:color-mix(in srgb,var(--accent) 60%,var(--line));position:relative;z-index:2}
-  .kpi.hero:hover{border-color:var(--accent)}
-  .kpi:hover .val,.agec:hover .av{transform:scale(1.08)}
-  .charts>.card:hover h2,.stbox:hover h3{color:var(--accent)}
-  .kpis:hover>.kpi:not(:hover),.charts:hover>.card:not(:hover),.ages:hover>.agec:not(:hover),.stcharts:hover>.stbox:not(:hover){opacity:.6}
-  .p-two>.card:hover,.stack>.card:hover{box-shadow:0 10px 26px color-mix(in srgb,var(--ink) 12%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-  .card h2,.stbox h3{transition:color .2s}
-  table tbody tr{transition:background-color .15s}
-  #tAge tbody tr:hover td,#tBT tbody tr:hover td,#tSC tbody tr:hover td,#tProv tbody tr:hover td{background-color:color-mix(in srgb,var(--accent) 9%,transparent)}
-}
-@media (prefers-reduced-motion:reduce){.page.enter *{animation:none!important}.kpi,.charts>.card,.stbox,.agec{transform:none!important}}
-/* ---- thẻ hồ sơ nhân viên */
-.nvlink{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;border-bottom:1px dashed color-mix(in srgb,var(--accent) 70%,transparent);transition:color .15s}
-.nvlink:hover,.nvlink:focus-visible{color:var(--accent);outline:none}
-tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} tr.nvon td:first-child{box-shadow:inset 3px 0 0 var(--accent),inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)}
-#nvCard{box-sizing:border-box;position:sticky;left:0;max-width:calc(100vw - 80px);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:14px;margin:2px 0 14px;padding:14px 16px;display:grid;gap:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,var(--panel)),var(--panel) 55%);box-shadow:0 10px 28px color-mix(in srgb,var(--ink) 10%,transparent);animation:cardIn .45s cubic-bezier(.2,.75,.2,1)}
-@keyframes cardIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
-#nvCard .ph{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
-#nvCard .av0{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:700 16px var(--f-body);color:#fff;background:var(--brand);flex:none}
-#nvCard .pn{min-width:0;flex:1} #nvCard .pn b{display:block;font-size:18px} #nvCard .pn span{font-size:12.5px;color:var(--muted)}
-#nvCard .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font:700 13px var(--f-body);animation:popIn .6s .15s cubic-bezier(.2,.75,.2,1) backwards}
-#nvCard .badge.rk{background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--ink)}
-#nvCard .badge.good{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}
-#nvCard .badge.bad{background:color-mix(in srgb,var(--badt) 14%,transparent);color:var(--badt)}
-#nvCard .badge.mid{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--ink)}
-#nvCard .x{border:1px solid var(--line);background:var(--panel);color:var(--muted);width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer}
-#nvCard .x:hover{color:var(--ink);border-color:var(--ink)}
-#nvCard .pk{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
-#nvCard .pk div{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--panel);animation:upIn .5s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*60ms + 80ms);transition:transform .2s,border-color .2s}
-#nvCard .pk div:hover{transform:translateY(-3px);border-color:var(--accent)}
-#nvCard .pk small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-#nvCard .pk strong{font:700 22px var(--f-body);font-variant-numeric:tabular-nums}
-#nvCard .pk em{display:block;font-style:normal;font-size:11.5px;color:var(--muted)}
-#nvCard .cmpg{display:grid;grid-template-columns:minmax(150px,1.2fr) 80px 80px minmax(140px,2fr) 118px;gap:6px 12px;align-items:center;font-size:13px}
-#nvCard .cmpg .hd{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
-#nvCard .cmpg .n{text-align:right;font-variant-numeric:tabular-nums} #nvCard .cmpg .n.me{font-weight:700}
-#nvCard .cmpg .sec{grid-column:1/-1;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:7px;color:#fff;margin-top:4px}
-#nvCard .cmpg .sec.sc{background:var(--s2)} #nvCard .cmpg .sec.bt{background:var(--s1)} #nvCard .cmpg .sec.al{background:var(--brand)}
-#nvCard .db{display:grid;gap:3px} #nvCard .db i{display:block;height:7px;border-radius:4px;width:0;transition:width .8s cubic-bezier(.2,.75,.2,1)}
-#nvCard .db i.me{background:var(--accent)} #nvCard .db i.tm{background:color-mix(in srgb,var(--muted) 45%,transparent)}
-#nvCard .vd{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;text-align:center;white-space:nowrap}
-#nvCard .vd.good{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)} #nvCard .vd.bad{background:color-mix(in srgb,var(--badt) 13%,transparent);color:var(--badt)} #nvCard .vd.eq{background:color-mix(in srgb,var(--muted) 12%,transparent);color:var(--muted)}
-#nvCard .lg2{display:flex;gap:14px;font-size:12px;color:var(--muted)} #nvCard .lg2 i{display:inline-block;width:12px;height:7px;border-radius:3px;margin-right:5px}
-#nvCard .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
-#nvCard .sum div{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5} #nvCard .sum h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
-#nvCard .sum .pos{background:color-mix(in srgb,var(--good) 8%,transparent)} #nvCard .sum .pos h4{color:var(--good)}
-#nvCard .sum .neg{background:color-mix(in srgb,var(--badt) 8%,transparent)} #nvCard .sum .neg h4{color:var(--badt)}
-#nvCard .sum ul{margin:0;padding-left:18px}
-@media (max-width:720px){#nvCard{max-width:calc(100vw - 62px);padding:12px}#nvCard .pk{grid-template-columns:repeat(2,minmax(0,1fr))}#nvCard>*{min-width:0}#nvCard .pn{flex:1 1 calc(100% - 60px)}#nvCard .pk div{min-width:0}#nvCard .vd{font-size:11px;padding:3px 6px}#nvCard .cmpg{grid-template-columns:minmax(0,1fr) 50px 50px 78px;gap:6px 6px;font-size:12.5px}#nvCard .cmpg .bar{display:none}#nvCard .cmpg .hd.bar{display:none}}
-@media (prefers-reduced-motion:reduce){#nvCard,#nvCard *{animation:none!important}#nvCard .db i{transition:none}}
-</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Ticket kỹ thuật Winmart</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -409,6 +349,66 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
 .p-st thead th{position:static}
 @media (max-width:720px){.stctl,.sw{width:100%}.sw button{flex:1 0 auto;padding:7px 10px;font-size:12.5px}.agec{padding:10px 12px}.agec .av{font-size:24px}.hbar{grid-template-columns:80px minmax(0,1fr) 54px}}
 @media (prefers-reduced-motion:reduce){.sw .ind,.agec .mt i,.hbar .t i{transition:none}}
+/* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
+@keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes popIn{0%{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}100%{transform:none}}
+.page.enter .anim{animation:upIn .55s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms)}
+.page.enter .anim h2,.page.enter .anim h3,.page.enter .anim .cap,.page.enter .kpi .lab,.page.enter .agec .an{animation:leftIn .5s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms + 120ms)}
+.page.enter .kpi .val,.page.enter .agec .av{animation:popIn .6s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms + 180ms)}
+.kpi .val,.agec .av{transform-origin:left center;transition:transform .25s cubic-bezier(.2,.75,.2,1)}
+.kpi,.charts>.card,.stbox,.p-two>.card,.stack>.card,.agec{transition:transform .25s cubic-bezier(.2,.75,.2,1),box-shadow .25s,border-color .25s,opacity .25s}
+@media (hover:hover){
+  .kpi:hover,.charts>.card:hover,.stbox:hover{transform:translateY(-5px);box-shadow:0 14px 30px color-mix(in srgb,var(--ink) 15%,transparent);border-color:color-mix(in srgb,var(--accent) 60%,var(--line));position:relative;z-index:2}
+  .kpi.hero:hover{border-color:var(--accent)}
+  .kpi:hover .val,.agec:hover .av{transform:scale(1.08)}
+  .charts>.card:hover h2,.stbox:hover h3{color:var(--accent)}
+  .kpis:hover>.kpi:not(:hover),.charts:hover>.card:not(:hover),.ages:hover>.agec:not(:hover),.stcharts:hover>.stbox:not(:hover){opacity:.6}
+  .p-two>.card:hover,.stack>.card:hover{box-shadow:0 10px 26px color-mix(in srgb,var(--ink) 12%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+  .card h2,.stbox h3{transition:color .2s}
+  table tbody tr{transition:background-color .15s}
+  #tAge tbody tr:hover td,#tBT tbody tr:hover td,#tSC tbody tr:hover td,#tProv tbody tr:hover td{background-color:color-mix(in srgb,var(--accent) 9%,transparent)}
+}
+@media (prefers-reduced-motion:reduce){.page.enter *{animation:none!important}.kpi,.charts>.card,.stbox,.agec{transform:none!important}}
+/* ---- thẻ hồ sơ nhân viên */
+.nvlink{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;border-bottom:1px dashed color-mix(in srgb,var(--accent) 70%,transparent);transition:color .15s}
+.nvlink:hover,.nvlink:focus-visible{color:var(--accent);outline:none}
+tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} tr.nvon td:first-child{box-shadow:inset 3px 0 0 var(--accent),inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)}
+#nvCard{box-sizing:border-box;position:sticky;left:0;max-width:calc(100vw - 80px);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:14px;margin:2px 0 14px;padding:14px 16px;display:grid;gap:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,var(--panel)),var(--panel) 55%);box-shadow:0 10px 28px color-mix(in srgb,var(--ink) 10%,transparent);animation:cardIn .45s cubic-bezier(.2,.75,.2,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+#nvCard .ph{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+#nvCard .av0{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:700 16px var(--f-body);color:#fff;background:var(--brand);flex:none}
+#nvCard .pn{min-width:0;flex:1} #nvCard .pn b{display:block;font-size:18px} #nvCard .pn span{font-size:12.5px;color:var(--muted)}
+#nvCard .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font:700 13px var(--f-body);animation:popIn .6s .15s cubic-bezier(.2,.75,.2,1) backwards}
+#nvCard .badge.rk{background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--ink)}
+#nvCard .badge.good{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}
+#nvCard .badge.bad{background:color-mix(in srgb,var(--badt) 14%,transparent);color:var(--badt)}
+#nvCard .badge.mid{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--ink)}
+#nvCard .x{border:1px solid var(--line);background:var(--panel);color:var(--muted);width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer}
+#nvCard .x:hover{color:var(--ink);border-color:var(--ink)}
+#nvCard .pk{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+#nvCard .pk div{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--panel);animation:upIn .5s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*60ms + 80ms);transition:transform .2s,border-color .2s}
+#nvCard .pk div:hover{transform:translateY(-3px);border-color:var(--accent)}
+#nvCard .pk small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+#nvCard .pk strong{font:700 22px var(--f-body);font-variant-numeric:tabular-nums}
+#nvCard .pk em{display:block;font-style:normal;font-size:11.5px;color:var(--muted)}
+#nvCard .cmpg{display:grid;grid-template-columns:minmax(150px,1.2fr) 80px 80px minmax(140px,2fr) 118px;gap:6px 12px;align-items:center;font-size:13px}
+#nvCard .cmpg .hd{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+#nvCard .cmpg .n{text-align:right;font-variant-numeric:tabular-nums} #nvCard .cmpg .n.me{font-weight:700}
+#nvCard .cmpg .sec{grid-column:1/-1;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:7px;color:#fff;margin-top:4px}
+#nvCard .cmpg .sec.sc{background:var(--s2)} #nvCard .cmpg .sec.bt{background:var(--s1)} #nvCard .cmpg .sec.al{background:var(--brand)}
+#nvCard .db{display:grid;gap:3px} #nvCard .db i{display:block;height:7px;border-radius:4px;width:0;transition:width .8s cubic-bezier(.2,.75,.2,1)}
+#nvCard .db i.me{background:var(--accent)} #nvCard .db i.tm{background:color-mix(in srgb,var(--muted) 45%,transparent)}
+#nvCard .vd{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;text-align:center;white-space:nowrap}
+#nvCard .vd.good{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)} #nvCard .vd.bad{background:color-mix(in srgb,var(--badt) 13%,transparent);color:var(--badt)} #nvCard .vd.eq{background:color-mix(in srgb,var(--muted) 12%,transparent);color:var(--muted)}
+#nvCard .lg2{display:flex;gap:14px;font-size:12px;color:var(--muted)} #nvCard .lg2 i{display:inline-block;width:12px;height:7px;border-radius:3px;margin-right:5px}
+#nvCard .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+#nvCard .sum div{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5} #nvCard .sum h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+#nvCard .sum .pos{background:color-mix(in srgb,var(--good) 8%,transparent)} #nvCard .sum .pos h4{color:var(--good)}
+#nvCard .sum .neg{background:color-mix(in srgb,var(--badt) 8%,transparent)} #nvCard .sum .neg h4{color:var(--badt)}
+#nvCard .sum ul{margin:0;padding-left:18px}
+@media (max-width:720px){#nvCard{max-width:calc(100vw - 62px);padding:12px}#nvCard .pk{grid-template-columns:repeat(2,minmax(0,1fr))}#nvCard>*{min-width:0}#nvCard .pn{flex:1 1 calc(100% - 60px)}#nvCard .pk div{min-width:0}#nvCard .vd{font-size:11px;padding:3px 6px}#nvCard .cmpg{grid-template-columns:minmax(0,1fr) 50px 50px 78px;gap:6px 6px;font-size:12.5px}#nvCard .cmpg .bar{display:none}#nvCard .cmpg .hd.bar{display:none}}
+@media (prefers-reduced-motion:reduce){#nvCard,#nvCard *{animation:none!important}#nvCard .db i{transition:none}}
 </style>
 
 <header class="top" id="hdr"><div class="wrap">
