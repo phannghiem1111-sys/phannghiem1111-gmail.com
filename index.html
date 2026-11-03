@@ -1,5 +1,26 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0">
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}/* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
+@keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes popIn{0%{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}100%{transform:none}}
+.page.enter .anim{animation:upIn .55s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms)}
+.page.enter .anim h2,.page.enter .anim h3,.page.enter .anim .cap,.page.enter .kpi .lab,.page.enter .agec .an{animation:leftIn .5s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms + 120ms)}
+.page.enter .kpi .val,.page.enter .agec .av{animation:popIn .6s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms + 180ms)}
+.kpi .val,.agec .av{transform-origin:left center;transition:transform .25s cubic-bezier(.2,.75,.2,1)}
+.kpi,.charts>.card,.stbox,.p-two>.card,.stack>.card,.agec{transition:transform .25s cubic-bezier(.2,.75,.2,1),box-shadow .25s,border-color .25s,opacity .25s}
+@media (hover:hover){
+  .kpi:hover,.charts>.card:hover,.stbox:hover{transform:translateY(-5px);box-shadow:0 14px 30px color-mix(in srgb,var(--ink) 15%,transparent);border-color:color-mix(in srgb,var(--accent) 60%,var(--line));position:relative;z-index:2}
+  .kpi.hero:hover{border-color:var(--accent)}
+  .kpi:hover .val,.agec:hover .av{transform:scale(1.08)}
+  .charts>.card:hover h2,.stbox:hover h3{color:var(--accent)}
+  .kpis:hover>.kpi:not(:hover),.charts:hover>.card:not(:hover),.ages:hover>.agec:not(:hover),.stcharts:hover>.stbox:not(:hover){opacity:.6}
+  .p-two>.card:hover,.stack>.card:hover{box-shadow:0 10px 26px color-mix(in srgb,var(--ink) 12%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+  .card h2,.stbox h3{transition:color .2s}
+  table tbody tr{transition:background-color .15s}
+  #tAge tbody tr:hover td,#tBT tbody tr:hover td,#tSC tbody tr:hover td,#tProv tbody tr:hover td{background-color:color-mix(in srgb,var(--accent) 9%,transparent)}
+}
+@media (prefers-reduced-motion:reduce){.page.enter *{animation:none!important}.kpi,.charts>.card,.stbox,.agec{transform:none!important}}
+</style></head><body>
 <title>Ticket kỹ thuật Winmart</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -967,7 +988,7 @@ function cmpTable(sel,ST,REGS,scoped){
     tr.append(td);
   }
 }
-let rz=0; const reflow=()=>{ cancelAnimationFrame(rz); rz=requestAnimationFrame(()=>{ if(M&&STATS.length) { renderOverview(); renderStores(false); } }); };
+let rz=0; const reflow=()=>{ cancelAnimationFrame(rz); rz=requestAnimationFrame(()=>{ if(M&&STATS.length) { renderOverview(); renderStores(false); const pg=PAGES[PI]; if(pg&&pg.classList.contains('enter')) tagAnim(pg); } }); };
 new ResizeObserver(reflow).observe(document.querySelector('main'));
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',reflow);
 new MutationObserver(reflow).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
@@ -1052,7 +1073,7 @@ function showMonth(){
   STATS=LIST.map(v=>monthStats(monthView(v.y,v.m)));
   if(SEL.all){ const B=baseStats(STATS); M=allView(B.map(s=>s.v),STATS.filter(s=>!B.includes(s)).map(s=>'T'+s.v.month)); DIV=B.length; }
   else { M=STATS[LIST.findIndex(v=>v.y===SEL.y&&v.m===SEL.m)].v; DIV=1; }
-  renderMonths(); render(); renderOverview(); renderStores(); $('dl').hidden=!!SEL.all; $('rl').hidden=!!SEL.all||$('gd').hidden; $('rl').querySelector('.lbl').textContent=`Xóa và nạp lại tháng ${M.month}`; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
+  renderMonths(); render(); renderOverview(); renderStores(); enter(PAGES[PI]); $('dl').hidden=!!SEL.all; $('rl').hidden=!!SEL.all||$('gd').hidden; $('rl').querySelector('.lbl').textContent=`Xóa và nạp lại tháng ${M.month}`; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
 }
 
 // ---------------------------------------------------------------- Excel 3 sheet
@@ -1227,6 +1248,11 @@ async function buildXlsx(){
 // ---------------------------------------------------------------- chuyển trang
 const PAGES=[...document.querySelectorAll('.page')]; let PI=0;
 const TABS=PAGES.map((p,k)=>{ const b=el('button',p.dataset.title); b.type='button'; b.setAttribute('role','tab'); b.onclick=()=>go(k); $('tabs').append(b); return b; });
+// hiệu ứng vào trang: các ô hiện lần lượt
+const ANIM_SEL='.area,.kpi,.charts>.card,.p-two>.card,.stack>.card,.p-one>.card,.sthead,.agec,.stbox,.p-st .tbl';
+function tagAnim(pg){ let k=0; pg.querySelectorAll(ANIM_SEL).forEach(e=>{ e.classList.add('anim'); e.style.setProperty('--i',Math.min(k++,14)); }); }
+function enter(pg){ if(!pg) return; tagAnim(pg);
+  pg.classList.remove('enter'); void pg.offsetWidth; pg.classList.add('enter'); clearTimeout(pg._et); pg._et=setTimeout(()=>pg.classList.remove('enter'),1800); }
 function go(i){
   i=Math.max(0,Math.min(PAGES.length-1,i)); if(TABS[i].disabled) return; PI=i;
   PAGES.forEach((p,k)=>{ p.hidden=k!==i; TABS[k].setAttribute('aria-selected',k===i?'true':'false'); });
@@ -1234,7 +1260,7 @@ function go(i){
   const en=TABS.map((t,k)=>!t.disabled?k:-1).filter(k=>k>=0);
   $('pPrev').disabled=i<=en[0]; $('pNext').disabled=i>=en[en.length-1];
   try{ localStorage.setItem('tk_page',String(i)); }catch(e){}
-  window.scrollTo({top:0}); reflow();
+  window.scrollTo({top:0}); reflow(); enter(PAGES[i]);
 }
 const step=d=>{ let k=PI+d; while(k>=0&&k<PAGES.length&&TABS[k].disabled) k+=d; if(k>=0&&k<PAGES.length) go(k); };
 $('pPrev').onclick=()=>step(-1); $('pNext').onclick=()=>step(1);
