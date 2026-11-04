@@ -489,6 +489,14 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
 .dstbl select{font:500 13px var(--f-body);padding:4px 6px;border:1px solid var(--accent);border-radius:6px;background:var(--panel);color:var(--ink);max-width:220px}
 .dstbl .man{font-size:11px;color:var(--muted);margin-left:6px}
 .dsmore{justify-self:start;font:600 13px var(--f-body);padding:7px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;margin-top:8px}
+/* ---- ô số lượng: đã hoàn thành / tổng, % phía sau */
+.kpi .val.vcnt{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 4px}
+.kpi .vcnt .vdone{font-weight:800;color:var(--ok)}
+.kpi .vcnt .vtot{font-size:.62em;font-weight:600;color:var(--muted)}
+.kpi .vcnt .vpct{margin-left:auto;align-self:center;font-size:.5em;font-weight:700;padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.kpi.hero .vcnt .vdone{color:#7fd1ae}
+.kpi.hero .vcnt .vtot{color:color-mix(in srgb,var(--brand-ink) 75%,transparent)}
+.kpi.hero .vcnt .vpct{background:color-mix(in srgb,var(--brand-ink) 16%,transparent);color:var(--brand-ink)}
 /* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
 @keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
@@ -1245,11 +1253,12 @@ function renderOverview(){
   const pl=p?` so với T${p.v.month}`:'';
   // ô số nổi bật
   const k=$('kpis'); k.replaceChildren();
-  const tile=(lab,val,foot,dl,ratio,hero)=>{ const d=el('div',null,'kpi'+(hero?' hero':'')); d.append(el('div',lab,'lab'),el('div',val,'val'));
+  const tile=(lab,val,foot,dl,ratio,hero)=>{ const d=el('div',null,'kpi'+(hero?' hero':'')); d.append(el('div',lab,'lab'));
+    if(Array.isArray(val)){ const v=el('div',null,'val vcnt'); v.append(el('b',val[0],'vdone'),el('span',' / '+val[1],'vtot'),el('span',val[2],'vpct')); d.append(v); } else d.append(el('div',val,'val'));
     if(ratio!=null){ const m=el('div',null,'meter'),q=el('i'); q.style.width=Math.min(100,ratio*100)+'%'; m.append(q); d.append(m); }
     d.append(el('div',foot,'foot')); if(dl){ dl.title='So với tháng trước'+(p&&partial(c.v)?' (tháng này chưa hết)':''); d.append(dl); dl.append(document.createTextNode(pl)); } k.append(d); };
-  tile(ALL?`Kế hoạch BTBD · ${AN}`:`Kế hoạch BTBD T${c.v.month}`,pc(c.btRate),`${fmt(c.btDone)} / ${fmt(c.btN)} ticket đã hoàn thành · còn ${fmt(c.btPend)}`,delta(c.btRate,p&&p.btRate,true,'pp'),c.btRate,true);
-  tile('Cửa hàng đã BTBD',pc(c.cov),`trên ${fmt(c.ch)} cửa hàng`+(AREA.lead?' của đội':' hiện hữu'),delta(c.cov,p&&p.cov,true,'pp'),c.cov);
+  tile(ALL?`Kế hoạch BTBD · ${AN}`:`Kế hoạch BTBD T${c.v.month}`,[fmt(c.btDone),fmt(c.btN),pc(c.btRate)],`ticket đã hoàn thành · còn ${fmt(c.btPend)} ticket`,delta(c.btRate,p&&p.btRate,true,'pp'),c.btRate,true);
+  tile('Cửa hàng đã BTBD',[fmt(c.btDone),fmt(c.ch),pc(c.cov)],AREA.lead?'cửa hàng đã BTBD / cửa hàng của đội':'cửa hàng đã BTBD / CHHH',delta(c.cov,p&&p.cov,true,'pp'),c.cov);
   tile(ALL?'SCKT phát sinh / tháng':'Sự cố kỹ thuật phát sinh',fmt(c.scN),AREA.lead?`${fmt(c.scDone)} đã xử lý · còn ${fmt(c.scN-c.scDone)}`:REGS.map(g=>`${g} ${fmt(c.reg[g].scN)}`).join(' · '),delta(c.scN,p&&p.scN,false));
   tile('Ngày xử lý TB (SCKT)',f2(c.scDays),`BTBD: ${f2(c.btDays)} ngày`,delta(c.scDays,p&&p.scDays,false,'d'));
   tile('SCKT trễ leadtime',pc(c.lateRate),`${fmt(c.late)} ticket trễ trên ${fmt(c.scDone)} đã xử lý`,delta(c.lateRate,p&&p.lateRate,false,'pp'));
