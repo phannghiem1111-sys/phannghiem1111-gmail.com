@@ -723,7 +723,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
       <div class="dshead"><div><h2>Danh sách nhân sự và cửa hàng</h2><p class="cap" id="dsCap"></p></div>
         <div class="sw" id="dsSw" aria-label="Danh sách" role="radiogroup"><button data-v="ns">Trưởng bộ phận, đội trưởng, nhân viên</button><button data-v="ch">Cửa hàng</button></div></div>
       <div id="dsNs">
-        <div class="tools"><input type="search" id="dsQ" placeholder="Tìm tên nhân viên"><span class="legend">Hai số bên phải mỗi tên: số ticket đã nhận trong tháng đang xem · số cửa hàng được giao quản lý (CH)</span></div>
+        <div class="tools"><input type="search" id="dsQ" placeholder="Tìm tên nhân viên"><span class="legend">Bên phải mỗi tên: số ticket trong tháng đang xem - số cửa hàng (CH) được giao quản lý</span></div>
         <div id="dsTree"></div>
       </div>
       <div id="dsCh" hidden>
@@ -2030,7 +2030,7 @@ function renderDs(){
       for(const [l,t] of list){ const names=t.nv.map(k=>[k,NVNAME.get(k)||k]).filter(x=>!q||x[1].toLowerCase().includes(q)||leadName(l).toLowerCase().includes(q)); if(!names.length) continue; shown++;
         names.sort((x,y)=>(x[0]===nvKey(l)?-1:y[0]===nvKey(l)?1:0)||vi(x[1],y[1]));
         const c=el('article',null,'dsteam'), hd=el('header'); hd.append(el('b',leadName(l)),el('small',`${t.mien} · ${t.nv.length} nhân viên · ${fmt(st.filter(x=>x.lead===l).length)} cửa hàng`)); c.append(hd);
-        const ol=el('ol'); for(const [k,n] of names){ const li=el('li',null,(k===nvKey(l)?'ld ':'')+(tk.get(k)?'':'zero')); li.append(el('span',n+(k===nvKey(l)?' (đội trưởng)':'')),el('span',`${fmt(tk.get(k)||0)} · ${fmt(nStore.get(k)||0)} CH`)); ol.append(li); } c.append(ol); grid.append(c); }
+        const ol=el('ol'); for(const [k,n] of names){ const li=el('li',null,(k===nvKey(l)?'ld ':'')+(tk.get(k)?'':'zero')); li.append(el('span',n+(k===nvKey(l)?' (đội trưởng)':'')),el('span',`${fmt(tk.get(k)||0)} ticket - ${fmt(nStore.get(k)||0)} CH`)); ol.append(li); } c.append(ol); grid.append(c); }
       if(shown){ sec.append(grid); box.append(sec); } }
     if(!box.children.length) box.append(el('p','Không có nhân viên khớp từ khóa.','cap'));
     return;
