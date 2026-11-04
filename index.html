@@ -723,7 +723,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
       <div class="dshead"><div><h2>Danh sách nhân sự và cửa hàng</h2><p class="cap" id="dsCap"></p></div>
         <div class="sw" id="dsSw" aria-label="Danh sách" role="radiogroup"><button data-v="ns">Trưởng bộ phận, đội trưởng, nhân viên</button><button data-v="ch">Cửa hàng</button></div></div>
       <div id="dsNs">
-        <div class="tools"><input type="search" id="dsQ" placeholder="Tìm tên nhân viên"><span class="legend">Bên phải mỗi tên: số ticket trong tháng đang xem - số cửa hàng (CH) được giao quản lý</span></div>
+        <div class="tools"><div class="sw" id="dsTbp" aria-label="Khu vực" role="radiogroup"><button data-v="">Cả nước</button><button data-v="Nguyễn Xuân Phong">Miền Bắc</button><button data-v="Tạ Chấn Bang">Miền Nam (gồm Trung, Tây)</button></div><input type="search" id="dsQ" placeholder="Tìm tên nhân viên"><span class="legend">Bên phải mỗi tên: số ticket trong tháng đang xem - số cửa hàng (CH) được giao quản lý</span></div>
         <div id="dsTree"></div>
       </div>
       <div id="dsCh" hidden>
@@ -1994,7 +1994,7 @@ function enter(pg){ if(!pg) return; tagAnim(pg);
   pg.classList.remove('enter'); void pg.offsetWidth; pg.classList.add('enter'); clearTimeout(pg._et); pg._et=setTimeout(()=>pg.classList.remove('enter'),1800); }
 // ---- trang Danh sách: trưởng bộ phận → đội trưởng → nhân viên, và cửa hàng → nhân viên quản lý
 const TBP={'Bùi Văn Thiện':'Nguyễn Xuân Phong','Đinh Huy Tăng':'Nguyễn Xuân Phong','Nguyễn Văn Huy':'Nguyễn Xuân Phong','Trương Viết Thái':'Nguyễn Xuân Phong','Nguyễn Khánh Trình':'Tạ Chấn Bang','Nguyễn Trọng Minh':'Tạ Chấn Bang','Dương Quốc Minh':'Tạ Chấn Bang'};
-const DS={v:'ns',lead:'',q:'',qc:'',miss:false,lim:200};
+const DS={tbp:'',v:'ns',lead:'',q:'',qc:'',miss:false,lim:200};
 const dsPick={ get(){ try{ return JSON.parse(localStorage.getItem('tk_chnv')||'{}'); }catch(e){ return {}; } }, set(o){ try{ localStorage.setItem('tk_chnv',JSON.stringify(o)); }catch(e){} } };
 const NVNAME=new Map(); { const raw=JSON.parse(document.getElementById('nvlist').textContent); for(const k in raw) NVNAME.set(nvKey(k),k.split(' -')[0].trim()); }
 let DSC=null;
@@ -2023,8 +2023,8 @@ function renderDs(){
     const tk=new Map(); if(M) for(const r of M.rows){ const k=nvKey(r.nv); tk.set(k,(tk.get(k)||0)+1); }
     const q=DS.q.trim().toLowerCase(), box=$('dsTree'); box.replaceChildren();
     const teams=dsTeams(), byT={}; for(const [l,t] of teams){ const b=TBP[l]||'(Chưa rõ)'; (byT[b]=byT[b]||[]).push([l,t]); }
-    for(const b of Object.keys(byT).sort(vi)){ const list=byT[b].sort((x,y)=>vi(leadKey(x[0]),leadKey(y[0])));
-      const sec=el('section',null,'dstbp'); const h=el('h3','Trưởng bộ phận: '+b); const tot=list.reduce((a,x)=>a+x[1].nv.length,0);
+    for(const b of Object.keys(byT).sort(vi)){ if(DS.tbp&&b!==DS.tbp) continue; const list=byT[b].sort((x,y)=>vi(leadKey(x[0]),leadKey(y[0])));
+      const sec=el('section',null,'dstbp'); const h=el('h3',(b==='Nguyễn Xuân Phong'?'Miền Bắc':b==='Tạ Chấn Bang'?'Miền Nam':'')+' · Trưởng bộ phận: '+b); const tot=list.reduce((a,x)=>a+x[1].nv.length,0);
       h.append(el('small',`${[...new Set(list.map(x=>x[1].mien))].join(', ')} · ${list.length} đội · ${tot} nhân viên`)); sec.append(h);
       const grid=el('div',null,'dsteams'); let shown=0;
       for(const [l,t] of list){ const names=t.nv.map(k=>[k,NVNAME.get(k)||k]).filter(x=>!q||x[1].toLowerCase().includes(q)||leadName(l).toLowerCase().includes(q)); if(!names.length) continue; shown++;
@@ -2223,7 +2223,7 @@ seg('segProv',v=>{provFilter=v; if(M) provTable(M.rows.filter(r=>r.bt),M.rows.fi
 seg('segNv',v=>{nvType=v; nvTable();});
 stPlace=[makeSw('stType','type'),makeSw('stReg','reg')];
 swBind('dlReg',()=>DLV.reg,v=>{ DLV.reg=v; DLV.lead=''; renderDl(true); }); $('dlLead').addEventListener('change',e=>{ DLV.lead=e.target.value; renderDl(true); });
-swBind('dsSw',()=>DS.v,v=>{ DS.v=v; renderDs(); }); $('dsQ').addEventListener('input',e=>{ DS.q=e.target.value; renderDs(); }); $('dsQc').addEventListener('input',e=>{ DS.qc=e.target.value; DS.lim=200; renderDs(); }); $('dsLead').addEventListener('change',e=>{ DS.lead=e.target.value; DS.lim=200; renderDs(); }); $('dsMiss').addEventListener('change',e=>{ DS.miss=e.target.checked; DS.lim=200; renderDs(); }); $('dsMore').onclick=()=>{ DS.lim+=300; renderDs(); }; dlNavInit(); dlClsPlace=swBind('dlClsSw',()=>DLV.cls,v=>{ DLV.cls=v; renderDl(false); });
+swBind('dsSw',()=>DS.v,v=>{ DS.v=v; renderDs(); }); swBind('dsTbp',()=>DS.tbp,v=>{ DS.tbp=v; renderDs(); }); $('dsQ').addEventListener('input',e=>{ DS.q=e.target.value; renderDs(); }); $('dsQc').addEventListener('input',e=>{ DS.qc=e.target.value; DS.lim=200; renderDs(); }); $('dsLead').addEventListener('change',e=>{ DS.lead=e.target.value; DS.lim=200; renderDs(); }); $('dsMiss').addEventListener('change',e=>{ DS.miss=e.target.checked; DS.lim=200; renderDs(); }); $('dsMore').onclick=()=>{ DS.lim+=300; renderDs(); }; dlNavInit(); dlClsPlace=swBind('dlClsSw',()=>DLV.cls,v=>{ DLV.cls=v; renderDl(false); });
 for(const id of ['aReg','xReg']) $(id).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; AREA={reg:b.dataset.v,lead:''}; reflow(); });
 for(const id of ['aLead','xLead']) $(id).addEventListener('change',e=>{ AREA.lead=e.target.value; reflow(); });
 $('q').addEventListener('input',nvTable); $('lead').addEventListener('change',nvTable); $('nvSel').addEventListener('change',()=>{ const v=$('nvSel').value; if(v&&M){ const l=$('lead').value||mode(M.rows.filter(r=>r.nv===v).map(r=>r.lead)); NVP={nv:v,lead:l}; } else NVP=null; nvTable(); });
