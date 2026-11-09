@@ -1116,7 +1116,8 @@ function avgStats(arr){   // trung bình từng chỉ số qua các tháng (tỷ
 const mLabel=(v,long)=>`T${v.month}`+(long&&partial(v)?` (đến ${v.maxD.getDate()}/${v.month})`:'');
 // khu vực đang xem ở trang Tổng quan: cả nước / một miền / một đội trưởng
 let AREA={reg:'',lead:''};
-const LEADSITES={}; for(const k in REF.sites){ const l=REF.leads[REF.sites[k][2]]; LEADSITES[l]=(LEADSITES[l]||0)+1; }
+// cửa hàng của từng đội = cửa hàng đang hoạt động trong danh sách cửa hàng T11, theo đội của nhân viên kỹ thuật được giao (không có thì theo cột Đội trưởng của sheet)
+const LEADSITES={}; for(const [c,n,ch,mi,pv,stt,nv,ld] of JSON.parse(document.getElementById('chlist').textContent).rows){ if(!/đang hoạt động/i.test(stt)) continue; const x=nv&&NVL.get(nvKey(nv)); const l=x?x[0]:ld; if(l) LEADSITES[l]=(LEADSITES[l]||0)+1; }
 const inArea=a=>r=>(!a.reg||r.reg===a.reg)&&(!a.lead||r.lead===a.lead);
 const areaCH=(a,g)=>a.lead?LEADSITES[a.lead]||null:REF.chhhChain[g||a.reg||'Tổng'];
 function monthStats(v,a){
@@ -1240,8 +1241,8 @@ function renderArea(){
     sel.value=AREA.lead; }
   for(const id of ['aReg','xReg']) [...$(id).children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===(AREA.reg||(AREA.lead?lr[AREA.lead]:''))?'true':'false'));
   const lab=AREA.lead?leadName(AREA.lead)+' ('+lr[AREA.lead]+')':AREA.reg||'Cả nước';
-  $('xLab').textContent=AREA.lead?`Đang xem: ${lab}. Cửa hàng của đội tính theo danh mục (${fmt(LEADSITES[AREA.lead]||0)} cửa hàng).`:AREA.reg?`Đang xem: ${lab}.`:'';
-  $('aLab').textContent=AREA.lead?`Cửa hàng của đội tính theo danh mục (${fmt(LEADSITES[AREA.lead]||0)} cửa hàng).`:'';
+  $('xLab').textContent=AREA.lead?`Đang xem: ${lab}. Cửa hàng của đội: ${fmt(LEADSITES[AREA.lead]||0)} cửa hàng đang hoạt động do nhân viên của đội quản lý (danh sách cửa hàng T11).`:AREA.reg?`Đang xem: ${lab}.`:'';
+  $('aLab').textContent=AREA.lead?`Cửa hàng của đội: ${fmt(LEADSITES[AREA.lead]||0)} cửa hàng đang hoạt động do nhân viên của đội quản lý (danh sách cửa hàng T11).`:'';
   return {lr,lab};
 }
 function renderOverview(){
