@@ -497,6 +497,14 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
 .kpi.hero .vcnt .vdone{color:#7fd1ae}
 .kpi.hero .vcnt .vtot{color:color-mix(in srgb,var(--brand-ink) 75%,transparent)}
 .kpi.hero .vcnt .vpct{background:color-mix(in srgb,var(--brand-ink) 16%,transparent);color:var(--brand-ink)}
+/* ---- nút Cập nhật giờ công đi lại trên thanh đầu trang */
+.btn.hdrup{flex:none;background:color-mix(in srgb,#fff 14%,transparent);color:var(--brand-ink);border-color:color-mix(in srgb,#fff 30%,transparent)}
+.btn.hdrup:hover{background:color-mix(in srgb,#fff 24%,transparent)}
+.btn.hdrup.busy svg{animation:hdrspin 1s linear infinite}
+@keyframes hdrspin{to{transform:rotate(360deg)}}
+@media (max-width:900px){.btn.hdrup{order:2}}
+@media (max-width:600px){.btn.hdrup{width:36px;padding:0;justify-content:center}.btn.hdrup .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.btn.hdrup.busy svg{animation:none}}
 /* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
 @keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
@@ -564,6 +572,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
     <h1 id="ttl">Ticket kỹ thuật tháng —</h1>
     <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
+  <button class="btn hdrup" id="gdDl" type="button" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công</span></button>
   <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button></div>
   <div class="actions">
     <div class="more">
@@ -571,7 +580,6 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
       <div class="menu" id="moreMenu" role="menu" hidden>
         <div class="mh">Nguồn dữ liệu</div>
         <button class="mi" id="gd" type="button" role="menuitem" title="Đọc các file Excel trong thư mục Google Drive &quot;FILE THO TICKET&quot;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l4-7 4 7M8 10l4-7 4 7-4 7M4 17h16"/></svg><span class="lbl">Lấy từ Google Drive</span></button>
-        <button class="mi" id="gdDl" type="button" role="menuitem" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công đi lại</span></button>
         <label class="mi" for="file" id="pick" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 15v4h14v-4"/></svg>Nạp file Excel</label>
         <div class="mh">Xuất báo cáo</div>
         <button class="mi" id="dl" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Tải Excel</button>
@@ -1487,7 +1495,7 @@ function dRanges(list){ const out=[]; let a=null,b=null; for(const x of [...list
 const DLS={thang:DLX.thang.slice(),w:DLW.w.slice(),wk:DLW.wk.slice(),ten:DLW.ten.slice()};
 const DLMIEN=new Map(); for(const a of DLS.thang) DLMIEN.set(nk(a[0]),a[1]); for(const [k,v] of NVL) if(!DLMIEN.has(k)) DLMIEN.set(k,v[1]);
 let DLGD=null, dlBusy=false, dlErr='', dlTried=false;
-function dlMenu(){ const b=$('gdDl'); if(!b) return; b.disabled=dlBusy; b.querySelector('.lbl').textContent=dlBusy?'Đang đọc giờ công…':'Cập nhật giờ công đi lại'; }
+function dlMenu(){ const b=$('gdDl'); if(!b) return; b.disabled=dlBusy; b.classList.toggle('busy',dlBusy); b.querySelector('.lbl').textContent=dlBusy?'Đang đọc giờ công…':'Cập nhật giờ công'; }
 function dlStamp(){ const d=DLGD&&DLGD.dates&&DLGD.dates.size?[...DLGD.dates].sort().pop():null;
   const lst=[...DLX.thang.map(a=>a[3])].sort().pop(); const to=d&&d>lst?d:lst; const f=x=>x?x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):'';
   return `Giờ công đến ${f(to)}`+(DLGD&&DLGD.at?` · đọc Drive lúc ${new Date(DLGD.at).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}`:' · bản nhúng sẵn')+(dlBusy?' · đang cập nhật…':dlErr?' · lỗi đọc Drive':''); }
