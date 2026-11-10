@@ -505,6 +505,13 @@ header.top .wrap{flex-wrap:nowrap;gap:12px}
 @media (max-width:900px){.btn.hdrup{order:2}}
 @media (max-width:600px){.btn.hdrup{width:36px;padding:0;justify-content:center}.btn.hdrup .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}
 @media (prefers-reduced-motion:reduce){.btn.hdrup.busy svg{animation:none}}
+/* ---- Nhóm 3: thay tủ mát (nhúng trang ngoài) */
+body.g3 #pnav,body.g3 #pages{display:none!important}
+#g3{display:flex;flex-direction:column}
+#g3[hidden]{display:none}
+#g3 .g3bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 16px;font-size:13px;color:var(--muted,#667);border-bottom:1px solid color-mix(in srgb,currentColor 15%,transparent)}
+#g3 .g3bar a{color:var(--brand);font-weight:600;text-decoration:none}
+#g3 iframe{display:block;width:100%;border:0;height:calc(100dvh - var(--h3,120px));background:#fff}
 /* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
 @keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
@@ -573,7 +580,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
     <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
   <button class="btn hdrup" id="gdDl" type="button" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công</span></button>
-  <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button></div>
+  <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button><button data-g="3" role="tab"><b>Nhóm 3</b><span>Thay tủ mát</span></button></div>
   <div class="actions">
     <div class="more">
       <button class="btn ghost" id="moreBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="Chức năng">Chức năng <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.4"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -598,6 +605,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
   <div class="pager"><button class="pg" id="pPrev" type="button" aria-label="Trang trước">‹</button><span id="pNum">1/7</span><button class="pg" id="pNext" type="button" aria-label="Trang sau">›</button></div>
 </div></nav>
 
+<div id="g3" hidden><div class="g3bar"><span>Theo dõi thay tủ mát tại 47 cửa hàng WinCommerce</span><a href="https://wcm-thay-tu-mat.vercel.app/" target="_blank" rel="noopener">Mở trong tab mới ↗</a></div><iframe id="g3f" title="Theo dõi thay tủ mát WCM" loading="lazy" allow="clipboard-write"></iframe></div>
 <div class="wrap"><main id="pages">
   <section class="page p-ov" data-title="Tổng quan" id="pg-ov">
     <div class="area"><span class="flab">Khu vực</span><div class="seg" id="aReg"><button data-v="" aria-pressed="true">Cả nước</button><button data-v="Miền Bắc">Miền Bắc</button><button data-v="Miền Nam">Miền Nam</button></div>
@@ -1993,14 +2001,19 @@ async function buildXlsx(){
 const PAGES=[...document.querySelectorAll('.page')]; let PI=0;
 const TABS=PAGES.map((p,k)=>{ const b=el('button',p.dataset.title); b.type='button'; b.setAttribute('role','tab'); b.onclick=()=>go(k); $('tabs').append(b); return b; });
 const DLI=PAGES.findIndex(p=>p.id==='pg-dl'); let G1=0; TABS[DLI].hidden=true;
+let G3=false;
 function navSync(){ const g2=PI===DLI; if(!g2) G1=PI; $('tabs').hidden=g2; $('tabs2').hidden=!g2; document.body.classList.toggle('g2',g2);
-  $('navGrp').querySelectorAll('button').forEach(b=>{ const on=(b.dataset.g==='2')===g2; b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; if(b.dataset.g==='2') b.disabled=!!TABS[DLI].disabled; });
+  $('navGrp').querySelectorAll('button').forEach(b=>{ const on=G3?b.dataset.g==='3':b.dataset.g===(g2?'2':'1'); b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; if(b.dataset.g==='2') b.disabled=!!TABS[DLI].disabled; });
   const sb=$('sub'); if(g2){ if(sb.dataset.s1==null) sb.dataset.s1=sb.hidden?'':'0'; if(sb.dataset.t1==null) sb.dataset.t1=sb.textContent; sb.textContent=dlStamp(); sb.hidden=false; } else if(sb.dataset.s1!=null){ sb.textContent=sb.dataset.t1; sb.hidden=sb.dataset.s1===''; delete sb.dataset.s1; delete sb.dataset.t1; }
   const t=$('ttl'); if(g2){ if(!t.textContent.startsWith('Hiệu suất')) t.dataset.t1=t.textContent; t.textContent='Hiệu suất đi lại nhân viên'+(M?(SEL.all?' · trung bình các tháng':` · tháng ${M.month}/${M.year}`):''); } else if(t.dataset.t1!=null&&t.textContent.startsWith('Hiệu suất')) t.textContent=t.dataset.t1;
   if(g2){ const pi=DLSUB.findIndex(x=>x[0]===DLV.pg); $('pNum').textContent=`${pi+1}/${DLSUB.length}`; $('pPrev').disabled=pi<=0; $('pNext').disabled=pi>=DLSUB.length-1; }
   else { const vis=PAGES.map((p,k)=>k).filter(k=>k!==DLI&&!TABS[k].disabled); $('pNum').textContent=`${vis.indexOf(PI)+1}/${vis.length}`; $('pPrev').disabled=PI<=vis[0]; $('pNext').disabled=PI>=vis[vis.length-1]; } }
-$('navGrp').querySelectorAll('button').forEach((b,k,all)=>{ b.type='button'; b.onclick=()=>{ if(b.dataset.g==='2'){ if(PI!==DLI) go(DLI); } else if(PI===DLI) go(G1===DLI?0:G1); };
-  b.onkeydown=e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return; e.preventDefault(); e.stopPropagation(); const n=all[1-k]; n.focus(); n.click(); }; });
+function showG3(on){ const t=$('ttl'); if(on===G3) return; G3=on; document.body.classList.toggle('g3',on); $('g3').hidden=!on;
+  if(on){ const f=$('g3f'); if(!f.src) f.src='https://wcm-thay-tu-mat.vercel.app/'; document.documentElement.style.setProperty('--h3',($('hdr').offsetHeight+$('g3').querySelector('.g3bar').offsetHeight)+'px'); t.dataset.t3=t.textContent; window.scrollTo({top:0}); }
+  else if(t.dataset.t3!=null){ t.textContent=t.dataset.t3; delete t.dataset.t3; }
+  navSync(); if(on) t.textContent='Theo dõi thay tủ mát WCM'; }
+$('navGrp').querySelectorAll('button').forEach((b,k,all)=>{ b.type='button'; b.onclick=()=>{ if(b.dataset.g==='3') return showG3(true); showG3(false); if(b.dataset.g==='2'){ if(PI!==DLI) go(DLI); } else if(PI===DLI) go(G1===DLI?0:G1); };
+  b.onkeydown=e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return; e.preventDefault(); e.stopPropagation(); const n=all[(k+(e.key==='ArrowRight'?1:all.length-1))%all.length]; n.focus(); n.click(); }; });
 
 // hiệu ứng vào trang: các ô hiện lần lượt
 const ANIM_SEL='.area,.kpi,.charts>.card,.p-two>.card,.stack>.card,.p-one>.card,.sthead,.agec,.stbox,.p-st .tbl';
@@ -2084,7 +2097,7 @@ function go(i){
 }
 const step=d=>{ if(PI===DLI) return dlStep(d); let k=PI+d; while(k>=0&&k<PAGES.length&&(TABS[k].disabled||k===DLI)) k+=d; if(k>=0&&k<PAGES.length) go(k); };
 $('pPrev').onclick=()=>step(-1); $('pNext').onclick=()=>step(1);
-document.addEventListener('keydown',e=>{ if(e.altKey||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+document.addEventListener('keydown',e=>{ if(G3) return; if(e.altKey||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
   if(e.key==='ArrowRight'||e.key==='PageDown'){ step(1); e.preventDefault(); } if(e.key==='ArrowLeft'||e.key==='PageUp'){ step(-1); e.preventDefault(); } });
 const setChrome=()=>document.documentElement.style.setProperty('--chrome',($('hdr').offsetHeight+$('pnav').offsetHeight)+'px');
 new ResizeObserver(setChrome).observe($('hdr')); new ResizeObserver(setChrome).observe($('pnav')); setChrome();
