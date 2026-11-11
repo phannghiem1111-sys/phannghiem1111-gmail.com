@@ -1442,11 +1442,13 @@ function renderStores(anim){
 // ---------------------------------------------------------------- Giờ công: dữ liệu đi lại (trang Hiệu suất đi lại) ghép với ticket
 const DLX=JSON.parse(document.getElementById('dilai').textContent);
 const nk=x=>String(x==null?'':x).normalize('NFC').split(' -')[0].toLowerCase().replace(/\s+/g,' ').trim();
-const DLM=new Map(); for(const a of DLX.thang){ const r=Object.fromEntries(DLX.keys.map((k,j)=>[k,a[j]])); if(!DLM.has(r.thang)) DLM.set(r.thang,new Map()); DLM.get(r.thang).set(nk(r.ten),r); }
+// nhân viên bỏ khỏi dữ liệu đi lại (Nhóm 2)
+const DL_EXCL=new Set(['Đoàn Đắc Huy','Phan Trường Nghiệm','Phan Trưởng Nghiệm','Tạ Chấn Bang'].map(nk)); const dlEx=k=>DL_EXCL.has(String(k).replace(/\s*\(.*$/,'').trim());
+const DLM=new Map(); for(const a of DLX.thang){ const r=Object.fromEntries(DLX.keys.map((k,j)=>[k,a[j]])); if(!DLM.has(r.thang)) DLM.set(r.thang,new Map()); if(!dlEx(nk(r.ten))) DLM.get(r.thang).set(nk(r.ten),r); }
 const ymk=(y,m)=>`${y}-${String(m).padStart(2,'0')}`;
 let dlMonthsLab=[...DLM.keys()].sort().map(k=>'T'+(+k.slice(5))).join(', ');
 function dlViews(){ const vs=SEL&&SEL.all?baseStats(STATS).map(s=>s.v):(M?[M]:[]); return vs.filter(v=>DLM.has(ymk(v.year,v.month))); }
-const DLW=JSON.parse(document.getElementById('dilaiw').textContent); let DLWK=DLW.ten.map(nk);
+const DLW=JSON.parse(document.getElementById('dilaiw').textContent); let DLWK=DLW.ten.map(nk); DLW.w=DLW.w.filter(a=>!dlEx(DLWK[a[0]]));
 const DLKEYS=[...DLM.keys()].sort();
 const vByKey=k=>{ const x=STATS.find(t=>ymk(t.v.year,t.v.month)===k); return x?x.v:null; };
 const DLCC=new Map();
@@ -1544,11 +1546,11 @@ function dlRebuild(){
   }
   // ghi lại các cấu trúc dùng chung
   DLX.thang=thang; DLM.clear();
-  for(const a of thang){ const r=Object.fromEntries(DLX.keys.map((k,j)=>[k,a[j]])); if(!DLM.has(r.thang)) DLM.set(r.thang,new Map()); DLM.get(r.thang).set(nk(r.ten),r); }
+  for(const a of thang){ const r=Object.fromEntries(DLX.keys.map((k,j)=>[k,a[j]])); if(!DLM.has(r.thang)) DLM.set(r.thang,new Map()); if(!dlEx(nk(r.ten))) DLM.get(r.thang).set(nk(r.ten),r); }
   DLKEYS.splice(0,DLKEYS.length,...[...DLM.keys()].sort()); dlMonthsLab=DLKEYS.map(k=>'T'+(+k.slice(5))).join(', ');
   const wl=[...W.values()].sort((a,b)=>a.tu<b.tu?-1:1), ten=[], ti=new Map(), w=[];
   wl.forEach((x,i)=>{ for(const r of x.rows){ if(!ti.has(r[0])){ ti.set(r[0],ten.length); ten.push(r[0]); } w.push([ti.get(r[0]),i,...r.slice(1)]); } });
-  DLW.wk=wl.map(x=>[x.tu,x.den]); DLW.w=w; DLW.ten=ten; DLWK=ten.map(nk); DLCC.clear(); DLC0=null;
+  DLW.wk=wl.map(x=>[x.tu,x.den]); DLW.ten=ten; DLWK=ten.map(nk); DLW.w=w.filter(a=>!dlEx(DLWK[a[0]])); DLCC.clear(); DLC0=null;
 }
 let DLC0=null;
 // đọc một file Excel: sheet "Báo cáo tổng hợp" (đi lại) hoặc bảng nghỉ phép
