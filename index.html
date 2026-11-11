@@ -793,6 +793,7 @@ const leadName = l => NHOM[l]||l;
 const leadKey = l => NHOM[l] ? NHOM[l] : '~'+l;
 const fmt = n => n==null||isNaN(n)?'—':Number(n).toLocaleString('vi-VN');
 const f2 = n => n==null||isNaN(n)?'—':Number(n).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const f1 = n => n==null||isNaN(n)?'—':Number(n).toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1});
 const pc = n => n==null||isNaN(n)||!isFinite(n)?'—':(n*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%';
 const $ = id => document.getElementById(id);
 const el = (tag, txt, cls) => { const e=document.createElement(tag); if(txt!=null) e.textContent=txt; if(cls) e.className=cls; return e; };
@@ -1466,7 +1467,7 @@ function dlStaff(){ return dlCalc(dlViews().map(v=>ymk(v.year,v.month))); }
 const dlAll=()=>dlCalc(DLKEYS);
 // tổng hợp một nhóm nhân viên (tỷ lệ tính trên tổng, số lượng chia cho số người)
 function dlPool(arr){ if(!arr.length) return null; const S=f=>arr.reduce((a,o)=>a+o[f],0), n=arr.length, m=arr[0].m||1;
-  return {n,nc:S('nc')/n/m,rNc:S('ncc')?S('nc')/S('ncc'):null,rG:S('gch')?S('gdl')/S('gch'):null,km:S('km')/n/m,ci:S('ci')/n/m,tk:S('tk')/n/m,tpd:S('nc')?S('tk')/S('nc'):null,kmt:S('tk')?S('km')/S('tk'):null,rate:S('tk')?S('done')/S('tk'):null}; }
+  return {n,nc:S('nc')/n/m,rNc:S('ncc')?S('nc')/S('ncc'):null,rG:S('gch')?S('gdl')/S('gch'):null,km:S('km')/n/m,ci:S('ci')/n/m,tk:S('tk')/n/m,tpd:S('nc')?S('tk')/S('nc'):null,kmt:S('tk')?S('km')/S('tk'):null,rate:S('tk')?S('done')/S('tk'):null,gdc:S('gdc')/n/m,gdl:S('gdl')/n/m,rDc:S('gdl')?S('gdc')/S('gdl'):null}; }
 const DLCLS={ok:['Đạt giờ chuẩn','từ 100% trở lên','--good'],mid:['Gần đạt','80% đến dưới 100%','--warn'],low:['Chưa đạt','dưới 80%','--badt']};
 const clsOf=r=>r==null?null:r>=1?'ok':r>=.8?'mid':'low';
 const DLSUB=[['ov','Tổng quan'],['cls','Phân loại và miền'],['ns','Năng suất ticket'],['nv','Nhân viên'],['nc','Ngày công tháng'],['tb','Trung bình các tháng'],['ck','Dữ liệu cần kiểm tra'],['src','Nguồn dữ liệu']];
@@ -1693,6 +1694,7 @@ function dlOv(scope,P,area,play){
   tile('Ticket / ngày công',f2(P.tpd),`TB ${f2(P.tk)} ticket / người / tháng`);
   tile('Km đi lại TB / người',fmt(Math.round(P.km||0)),`${f2(P.kmt)} km cho mỗi ticket`);
   tile('% hoàn thành ticket',pc(P.rate),'của các nhân viên trong phạm vi',P.rate);
+  tile('% giờ đi lại / giờ làm',pc(P.rDc),`${f1(P.gdc)} giờ đi lại / ${f1(P.gdl)} giờ làm TB mỗi người`,P.rDc);
   // nhận định
   const ins=$('dlIns'); ins.replaceChildren(); const add=(t,c)=>ins.append(c?el(c==='b'?'b':'span',t,c==='b'?null:c):document.createTextNode(t));
   add(area,'b'); add(`: ${nOk}/${scope.length} nhân viên đạt giờ chuẩn, % giờ chuẩn trung bình `); add(pc(P.rG),'b'); add('.');
@@ -1701,6 +1703,10 @@ function dlOv(scope,P,area,play){
       if(pp&&pp.rG!=null&&P.rG!=null){ const dv=(P.rG-pp.rG)*100; add(' '); add(`${dv>=0?'Tăng':'Giảm'} ${Math.abs(dv).toLocaleString('vi-VN',{maximumFractionDigits:1})} điểm`,dv>=0?'up':'dn'); add(` so với T${d.getMonth()+1} (${pc(pp.rG)}).`); } } }
   if(!DLV.reg&&!DLV.lead){ const r=DLREG.map(g=>[g,dlPool(scope.filter(o=>o.mien===g))]).filter(x=>x[1]&&x[1].rG!=null).sort((a,b)=>a[1].rG-b[1].rG); if(r.length>1){ add(' Miền thấp nhất: '); add(`${r[0][0]} ${pc(r[0][1].rG)}`,r[0][1].rG<1?'dn':'b'); add('; cao nhất: '); add(`${r[r.length-1][0]} ${pc(r[r.length-1][1].rG)}`,'b'); add('.'); } }
   const low=scope.filter(o=>o.rG!=null).sort((a,b)=>a.rG-b.rG)[0], top=scope.filter(o=>o.tk>0&&o.tpd!=null).sort((a,b)=>b.tpd-a.tpd)[0];
+  if(P.rDc!=null){ add(' Đi lại chiếm '); add(pc(P.rDc),'b'); add(` giờ làm (${f1(P.gdc)}/${f1(P.gdl)} giờ mỗi người)`);
+    if(!DLV.reg&&!DLV.lead){ const rr=DLREG.map(g=>[g,dlPool(scope.filter(o=>o.mien===g))]).filter(x=>x[1]&&x[1].rDc!=null).sort((a,b)=>b[1].rDc-a[1].rDc); if(rr.length>1){ add('; cao nhất '); add(`${rr[0][0]} ${pc(rr[0][1].rDc)}`,'b'); } }
+    else { const al=dlPool([...dlStaff().values()].filter(o=>o.ncc>0)); if(al&&al.rDc!=null){ const dv=(P.rDc-al.rDc)*100; add(Math.abs(dv)<0.05?`; ngang cả nước (${pc(al.rDc)})`:`; ${dv>0?'cao':'thấp'} hơn cả nước ${Math.abs(dv).toLocaleString('vi-VN',{maximumFractionDigits:1})} điểm (${pc(al.rDc)})`); } }
+    add('.'); }
   if(low){ add(' Thấp nhất: '); add(low.ten,'b'); add(` (${pc(low.rG)}).`); }
   if(top){ add(' Năng suất cao nhất: '); add(top.ten,'b'); add(` (${f2(top.tpd)} ticket / ngày công).`); }
   dlTrend(scope);
