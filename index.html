@@ -532,7 +532,10 @@ body.g3 #pnav,body.g3 #pages{display:none!important}
 .kcnote{margin:0}
 @media (max-width:999px){.kcg{grid-template-columns:1fr}}
 #dlLow{max-height:520px;overflow-y:auto;padding-right:4px}
+#g3 iframe[hidden]{display:none}
+#appTong.on{background:#fff;color:var(--brand);border-color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 /* Nhóm: tách thành từng nút riêng */
+#navGrp.ngrp button b{display:none}
 #navGrp.ngrp{gap:8px;padding:0;background:none;border:0;border-radius:0}
 #navGrp.ngrp button:not([data-g="3"]):not([aria-selected="true"]){background:color-mix(in srgb,#fff 14%,transparent);border:1px solid color-mix(in srgb,#fff 30%,transparent);opacity:1}
 #navGrp.ngrp button:not([data-g="3"]):not([aria-selected="true"]):hover{background:color-mix(in srgb,#fff 24%,transparent)}
@@ -606,7 +609,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
     <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
   <button class="btn hdrup" id="gdDl" type="button" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công</span></button>
-  <a class="btn hdrup" id="appTong" href="https://energy-projects.vercel.app/" target="_blank" rel="noopener" title="Mở app Energy"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><span class="lbl">Energy</span></a>
+  <a class="btn hdrup" id="appTong" href="https://energy-projects.vercel.app/" target="_blank" rel="noopener" title="Xem Energy Projects ngay trong trang (Ctrl+bấm để mở tab mới)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><span class="lbl">Energy</span></a>
   <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button><button data-g="3" role="tab"><b>Nhóm 3</b><span>Thay tủ mát</span></button></div>
   <div class="actions">
     <div class="more">
@@ -632,7 +635,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
   <div class="pager"><button class="pg" id="pPrev" type="button" aria-label="Trang trước">‹</button><span id="pNum">1/7</span><button class="pg" id="pNext" type="button" aria-label="Trang sau">›</button></div>
 </div></nav>
 
-<div id="g3" hidden><div class="g3bar"><span>Theo dõi thay tủ mát tại 47 cửa hàng WinCommerce</span><a href="https://wcm-thay-tu-mat.vercel.app/" target="_blank" rel="noopener">Mở trong tab mới ↗</a></div><iframe id="g3f" title="Theo dõi thay tủ mát WCM" loading="lazy" allow="clipboard-write"></iframe></div>
+<div id="g3" hidden><div class="g3bar"><span id="g3txt">Theo dõi thay tủ mát tại 47 cửa hàng WinCommerce</span><a id="g3lnk" href="https://wcm-thay-tu-mat.vercel.app/" target="_blank" rel="noopener">Mở trong tab mới ↗</a></div><iframe id="g3f" title="Theo dõi thay tủ mát WCM" loading="lazy" allow="clipboard-write"></iframe><iframe id="g4f" title="Energy Projects" loading="lazy" allow="clipboard-write" hidden></iframe></div>
 <div class="wrap"><main id="pages">
   <section class="page p-ov" data-title="Tổng quan" id="pg-ov">
     <div class="area"><span class="flab">Khu vực</span><div class="seg" id="aReg"><button data-v="" aria-pressed="true">Cả nước</button><button data-v="Miền Bắc">Miền Bắc</button><button data-v="Miền Nam">Miền Nam</button></div>
@@ -2138,15 +2141,18 @@ const TABS=PAGES.map((p,k)=>{ const b=el('button',p.dataset.title); b.type='butt
 const DLI=PAGES.findIndex(p=>p.id==='pg-dl'); let G1=0; TABS[DLI].hidden=true;
 let G3=false;
 function navSync(){ const g2=PI===DLI; if(!g2) G1=PI; $('tabs').hidden=g2; $('tabs2').hidden=!g2; document.body.classList.toggle('g2',g2);
-  $('navGrp').querySelectorAll('button').forEach(b=>{ const on=G3?b.dataset.g==='3':b.dataset.g===(g2?'2':'1'); b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; if(b.dataset.g==='2') b.disabled=!!TABS[DLI].disabled; });
+  $('navGrp').querySelectorAll('button').forEach(b=>{ const on=G3?(G3==='tm'&&b.dataset.g==='3'):b.dataset.g===(g2?'2':'1'); b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; if(b.dataset.g==='2') b.disabled=!!TABS[DLI].disabled; });
   const sb=$('sub'); if(g2){ if(sb.dataset.s1==null) sb.dataset.s1=sb.hidden?'':'0'; if(sb.dataset.t1==null) sb.dataset.t1=sb.textContent; sb.textContent=dlStamp(); sb.hidden=false; } else if(sb.dataset.s1!=null){ sb.textContent=sb.dataset.t1; sb.hidden=sb.dataset.s1===''; delete sb.dataset.s1; delete sb.dataset.t1; }
   const t=$('ttl'); if(g2){ if(!t.textContent.startsWith('Hiệu suất')) t.dataset.t1=t.textContent; t.textContent='Hiệu suất đi lại nhân viên'+(M?(SEL.all?' · trung bình các tháng':` · tháng ${M.month}/${M.year}`):''); } else if(t.dataset.t1!=null&&t.textContent.startsWith('Hiệu suất')) t.textContent=t.dataset.t1;
   if(g2){ const pi=DLSUB.findIndex(x=>x[0]===DLV.pg); $('pNum').textContent=`${pi+1}/${DLSUB.length}`; $('pPrev').disabled=pi<=0; $('pNext').disabled=pi>=DLSUB.length-1; }
   else { const vis=PAGES.map((p,k)=>k).filter(k=>k!==DLI&&!TABS[k].disabled); $('pNum').textContent=`${vis.indexOf(PI)+1}/${vis.length}`; $('pPrev').disabled=PI<=vis[0]; $('pNext').disabled=PI>=vis[vis.length-1]; } }
-function showG3(on){ const t=$('ttl'); if(on===G3) return; G3=on; document.body.classList.toggle('g3',on); $('g3').hidden=!on;
-  if(on){ const f=$('g3f'); if(!f.src) f.src='https://wcm-thay-tu-mat.vercel.app/'; document.documentElement.style.setProperty('--h3',($('hdr').offsetHeight+$('g3').querySelector('.g3bar').offsetHeight)+'px'); t.dataset.t3=t.textContent; window.scrollTo({top:0}); }
+const G3APP={tm:{f:'g3f',u:'https://wcm-thay-tu-mat.vercel.app/',bar:'Theo dõi thay tủ mát tại 47 cửa hàng WinCommerce',ttl:'Theo dõi thay tủ mát WCM'},en:{f:'g4f',u:'https://energy-projects.vercel.app/',bar:'Energy Projects: tiến độ dự án Solar, kiểm soát nhiệt độ, Bess',ttl:'Energy Projects'}};
+function showG3(m){ if(m===true) m='tm'; const t=$('ttl'); if(m===G3) return; const was=G3; G3=m; document.body.classList.toggle('g3',!!m); $('g3').hidden=!m;
+  if(m){ const a=G3APP[m]; for(const k in G3APP) $(G3APP[k].f).hidden=k!==m; const f=$(a.f); if(!f.src) f.src=a.u; $('g3txt').textContent=a.bar; $('g3lnk').href=a.u; document.documentElement.style.setProperty('--h3',($('hdr').offsetHeight+$('g3').querySelector('.g3bar').offsetHeight)+'px'); if(!was) t.dataset.t3=t.textContent; window.scrollTo({top:0}); }
   else if(t.dataset.t3!=null){ t.textContent=t.dataset.t3; delete t.dataset.t3; }
-  navSync(); if(on) t.textContent='Theo dõi thay tủ mát WCM'; }
+  $('appTong').classList.toggle('on',m==='en'); $('appTong').setAttribute('aria-pressed',m==='en'?'true':'false');
+  navSync(); if(m) t.textContent=G3APP[m].ttl; }
+$('appTong').addEventListener('click',e=>{ if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1) return; e.preventDefault(); showG3('en'); });
 $('navGrp').querySelectorAll('button').forEach((b,k,all)=>{ b.type='button'; b.onclick=()=>{ if(b.dataset.g==='3') return showG3(true); showG3(false); if(b.dataset.g==='2'){ if(PI!==DLI) go(DLI); } else if(PI===DLI) go(G1===DLI?0:G1); };
   b.onkeydown=e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return; e.preventDefault(); e.stopPropagation(); const n=all[(k+(e.key==='ArrowRight'?1:all.length-1))%all.length]; n.focus(); n.click(); }; });
 
