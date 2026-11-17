@@ -530,6 +530,7 @@ body.g3 #pnav,body.g3 #pages{display:none!important}
 #tKc i.kd,#tKcL i.kd{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
 .kcnote{margin:0}
 @media (max-width:999px){.kcg{grid-template-columns:1fr}}
+#dlLow{max-height:520px;overflow-y:auto;padding-right:4px}
 /* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
 @keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
@@ -724,7 +725,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
       </div>
       <div class="dlpg" data-k="cls" hidden>
         <div class="dlgrid">
-          <div class="stbox"><h3>Phân loại theo giờ chuẩn</h3><p class="cap">Bấm một nhóm để xem danh sách ở trang Nhân viên.</p><div class="dlcls" id="dlCls"></div><h3 class="dlsub">5 nhân viên thấp nhất</h3><div class="dlrank" id="dlLow"></div></div>
+          <div class="stbox"><h3>Phân loại theo giờ chuẩn</h3><p class="cap">Bấm một nhóm để xem danh sách ở trang Nhân viên.</p><div class="dlcls" id="dlCls"></div><h3 class="dlsub">Toàn bộ nhân viên (tỷ lệ thấp nhất ở trên)</h3><div class="dlrank" id="dlLow"></div></div>
           <div class="stbox"><h3>So sánh theo miền</h3><p class="cap">Miền theo dữ liệu đi lại. Trong báo cáo ticket, Miền Trung và Miền Tây thuộc Miền Nam.</p><div class="dlregs" id="dlRegs"></div></div>
         </div>
       </div>
@@ -1788,7 +1789,7 @@ function dlClsPg(scope,play){
     const tx=el('span'); tx.append(document.createTextNode(lab),el('small',sub)); const t=el('div',null,'t'), q=el('span'); t.append(q); b.append(el('i'),tx,el('b',String(n)),t);
     b.onclick=()=>{ DLV.cls=c; dlGo('nv'); }; cb.append(b); const w=(scope.length?n/scope.length*100:0)+'%'; if(play){ requestAnimationFrame(()=>requestAnimationFrame(()=>q.style.width=w)); } else q.style.width=w; }
   const col={ok:css('--good'),mid:css('--warn'),low:css('--badt')};
-  const lows=scope.filter(o=>o.rG!=null).sort((a,b)=>a.rG-b.rG).slice(0,5);
+  const lows=scope.filter(o=>o.rG!=null).sort((a,b)=>a.rG-b.rG);
   dlRank($('dlLow'),lows,o=>o.rG,pc,1.2,o=>col[o.cls]);
   const box=$('dlRegs'); box.replaceChildren();
   for(const [g,c] of [['Miền Bắc','--a1'],['Miền Trung','--a4'],['Miền Nam','--a5'],['Miền Tây','--a2']]){ const a=scope.filter(o=>o.mien===g); if(!a.length) continue; const p=dlPool(a); const cl=clsOf(p.rG)||'low';
