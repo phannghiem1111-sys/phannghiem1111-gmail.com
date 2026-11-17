@@ -532,6 +532,12 @@ body.g3 #pnav,body.g3 #pages{display:none!important}
 .kcnote{margin:0}
 @media (max-width:999px){.kcg{grid-template-columns:1fr}}
 #dlLow{max-height:520px;overflow-y:auto;padding-right:4px}
+/* Nhóm: tách thành từng nút riêng */
+#navGrp.ngrp{gap:8px;padding:0;background:none;border:0;border-radius:0}
+#navGrp.ngrp button:not([data-g="3"]):not([aria-selected="true"]){background:color-mix(in srgb,#fff 14%,transparent);border:1px solid color-mix(in srgb,#fff 30%,transparent);opacity:1}
+#navGrp.ngrp button:not([data-g="3"]):not([aria-selected="true"]):hover{background:color-mix(in srgb,#fff 24%,transparent)}
+#navGrp.ngrp button{border:1px solid transparent}
+#navGrp.ngrp button[data-g="3"]{margin-left:0}
 /* ---- chuyển động: vào trang và nhấn mạnh khi rê chuột */
 @keyframes upIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes leftIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
