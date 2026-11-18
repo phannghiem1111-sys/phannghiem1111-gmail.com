@@ -823,6 +823,8 @@ const nvKey=x=>String(x==null?'':x).normalize('NFC').split(' -')[0].toLowerCase(
 // tên trùng 2 người khác đội (Trần Văn Trung: 6345079 đội Huy, 3013425 đội Thái) -> ticket giữ đội theo cửa hàng
 const NV_TRUNG=new Set(['trần văn trung']);
 const NVL=new Map(Object.entries(JSON.parse(document.getElementById('nvlist').textContent)).map(([k,v])=>[nvKey(k),v]));
+// tên hiển thị chuẩn theo danh sách NV (sửa chữ hoa/thường lệch của OPS, vd NGUYỄN ĐỨC HỢP -> Nguyễn Đức Hợp)
+const NVN=new Map(Object.keys(JSON.parse(document.getElementById('nvlist').textContent)).map(k=>[nvKey(k),k.normalize('NFC').split(' -')[0].trim()]));
 const REGIONS = ['Miền Bắc','Miền Nam'];
 const KEEP = ['Chờ xử lý','Đang xử lý','Đã xử lý','Đã đóng'];
 const DONE = new Set(['Đã xử lý','Đã đóng']), PEND = new Set(['Chờ xử lý','Đang xử lý']);
@@ -904,7 +906,7 @@ function prepareRecs(objs,file){
     }
   }
   // đội trưởng theo danh sách nhân viên (ưu tiên hơn cách suy từ cửa hàng)
-  for(const r of recs){ const k=nvKey(r.nv); if(NV_TRUNG.has(k)){ if(r.lead==='Nguyễn Văn Huy') r.nv='Trần văn trung (6345079)'; continue; } const x=NVL.get(k); if(x) r.lead=x[0]; }
+  for(const r of recs){ const k=nvKey(r.nv); if(NV_TRUNG.has(k)){ if(r.lead==='Nguyễn Văn Huy') r.nv='Trần văn trung (6345079)'; continue; } const x=NVL.get(k); if(x){ r.lead=x[0]; r.nv=NVN.get(k)||r.nv; } }
   for(const r of recs){
     const g=REF.regByProv[r.prov] || (r.regRaw==='Miền Trung'?'Miền Nam':r.regRaw);
     r.moved=g!==r.regRaw;
@@ -1525,7 +1527,7 @@ function dlCalc(keys){
   const vs=keys.map(k=>({k,v:vByKey(k)})); const key=vs.map(x=>x.k+':'+(x.v?x.v.rows.length:0)).join('|'); if(DLCC.has(key)) return DLCC.get(key);
   const out=new Map(); const leadReg={}; for(const x of vs) if(x.v) for(const r of x.v.rows) if(r.lead&&!leadReg[r.lead]) leadReg[r.lead]=r.reg;
   for(const x of vs){ const tm=DLM.get(x.k); const byNv=by(x.v?x.v.rows:[],r=>nk(r.nv));
-    for(const [k,r] of tm){ let o=out.get(k); if(!o){ o={k,ten:r.ten.split(' -')[0].trim(),mien:r.mien,m:0,nc:0,ncc:0,gdl:0,glv:0,gdc:0,gch:0,km:0,ci:0,nghi:0,tk:0,sc:0,bt:0,done:0,late:0,scDone:0,leads:[]}; out.set(k,o); }
+    for(const [k,r] of tm){ let o=out.get(k); if(!o){ o={k,ten:NVN.get(k)||r.ten.split(' -')[0].trim(),mien:r.mien,m:0,nc:0,ncc:0,gdl:0,glv:0,gdc:0,gch:0,km:0,ci:0,nghi:0,tk:0,sc:0,bt:0,done:0,late:0,scDone:0,leads:[]}; out.set(k,o); }
       o.m++; o.nc+=r.ngay_cong; o.ncc+=r.ngay_chuan_den_nay; o.gdl+=r.gio_di_lam; o.glv+=r.gio_lv; o.gdc+=r.gio_dc; o.gch+=r.gio_chuan_den_nay; o.km+=r.km; o.ci+=r.checkin; o.nghi+=r.nghi||0;
       for(const t of byNv.get(k)||[]){ o.tk++; if(t.bt) o.bt++; else { o.sc++; if(t.done){ o.scDone++; if(t.late) o.late++; } } if(t.done) o.done++; o.leads.push(t.lead); if(!o.nv) o.nv=t.nv; } } }
   for(const o of out.values()){ const nl=NVL.get(o.k); o.lead=nl?nl[0]:mode(o.leads); if(nl&&(!o.mien||o.mien==='Chưa rõ miền')) o.mien=nl[1]; o.reg=o.lead&&leadReg[o.lead]||(o.mien==='Miền Bắc'?'Miền Bắc':'Miền Nam');
