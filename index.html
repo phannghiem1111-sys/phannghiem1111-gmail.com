@@ -820,6 +820,8 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
 const REF = JSON.parse(document.getElementById('ref').textContent);
 // danh sách nhân viên theo đội trưởng (file "DANH SACH NV NGAY 12 11.xlsx", 12/11/2026): tên → [đội trưởng, miền]. Chỉ gồm nhân viên + đội trưởng; trưởng bộ phận không có trong danh sách. Tên cũ không còn trong danh sách = đã nghỉ việc.
 const nvKey=x=>String(x==null?'':x).normalize('NFC').split(' -')[0].toLowerCase().replace(/\s+/g,' ').trim();
+// tên trùng 2 người khác đội (Trần Văn Trung: 6345079 đội Huy, 3013425 đội Thái) -> ticket giữ đội theo cửa hàng
+const NV_TRUNG=new Set(['trần văn trung']);
 const NVL=new Map(Object.entries(JSON.parse(document.getElementById('nvlist').textContent)).map(([k,v])=>[nvKey(k),v]));
 const REGIONS = ['Miền Bắc','Miền Nam'];
 const KEEP = ['Chờ xử lý','Đang xử lý','Đã xử lý','Đã đóng'];
@@ -902,7 +904,7 @@ function prepareRecs(objs,file){
     }
   }
   // đội trưởng theo danh sách nhân viên (ưu tiên hơn cách suy từ cửa hàng)
-  for(const r of recs){ const x=NVL.get(nvKey(r.nv)); if(x) r.lead=x[0]; }
+  for(const r of recs){ const k=nvKey(r.nv); if(NV_TRUNG.has(k)) continue; const x=NVL.get(k); if(x) r.lead=x[0]; }
   for(const r of recs){
     const g=REF.regByProv[r.prov] || (r.regRaw==='Miền Trung'?'Miền Nam':r.regRaw);
     r.moved=g!==r.regRaw;
