@@ -608,6 +608,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
     <h1 id="ttl">Ticket kỹ thuật tháng —</h1>
     <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
+  <button class="btn hdrup" id="dlUp" type="button" title="Chọn file Excel báo cáo di chuyển (sheet &quot;Báo cáo tổng hợp&quot;) hoặc bảng nghỉ phép từ máy để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg><span class="lbl">Nạp file đi lại</span></button><input type="file" id="dlFile" multiple accept=".xlsx,.xls" hidden>
   <button class="btn hdrup" id="gdDl" type="button" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công</span></button>
   <a class="btn hdrup" id="appChk" href="https://wcm-technical-public.vercel.app/" target="_blank" rel="noopener" title="Xem Form checklist ngay trong trang (Ctrl+bấm để mở tab mới)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M14.5 8.5H17M14.5 14.5H17"/></svg><span class="lbl">Form checklist</span></a>
   <a class="btn hdrup" id="appEn" href="https://energy-projects.vercel.app/" target="_blank" rel="noopener" title="Mở Energy Projects trong tab mới"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><span class="lbl">Energy</span></a>
@@ -1565,7 +1566,8 @@ const sortBy=(arr,val,asc)=>arr.sort((a,b)=>{ const x=val(a), y=val(b); const r=
 
 // ---------------------------------------------------------------- Hiệu suất đi lại: nguồn Google Drive + kiểm tra dữ liệu
 const DLREG=['Miền Bắc','Miền Trung','Miền Nam','Miền Tây','Chưa rõ miền'];
-const DL_FOLDER='1Khj0OzMy-VGbv-lGp-JB1BQnvU69MT07';   // thư mục "WCM bao cao di chuyen"
+const DL_FOLDER0='1Khj0OzMy-VGbv-lGp-JB1BQnvU69MT07'; let DL_FOLDER=DL_FOLDER0; try{ DL_FOLDER=localStorage.getItem('tk_dlfolder')||DL_FOLDER0; }catch(e){}
+function dlFolderId(t){ t=String(t||'').trim(); const m=t.match(/\/folders\/([\w-]{10,})/)||t.match(/[?&]id=([\w-]{10,})/)||t.match(/^([\w-]{10,})$/); return m?m[1]:null; }   // thư mục "WCM bao cao di chuyen"
 const dOf=x=>new Date(+x.slice(0,4),+x.slice(5,7)-1,+x.slice(8,10));
 const isoOf=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addD=(x,n)=>{ const d=dOf(x); d.setDate(d.getDate()+n); return isoOf(d); };
@@ -1644,9 +1646,9 @@ function dlParse(bytes){
   return {kind:'skip',rows:[]}; }
 function dlBuildGD(files,at){
   const tr=files.filter(f=>f.kind==='travel').sort((a,b)=>String(a.mt).localeCompare(String(b.mt)));
-  const owner=new Map(); tr.forEach((f,i)=>{ for(const r of f.rows) owner.set(r[2],i); });
+  const owner=new Map(); tr.forEach((f,i)=>{ for(const r of f.rows) owner.set(nk(r[1])+'|'+r[2],i); });   // file sau thắng theo (tên, ngày)
   const daily=new Map(), dates=new Set();
-  tr.forEach((f,i)=>{ f.used=0; for(const [ma,ten,d,ci,km,dc,l] of f.rows){ if(owner.get(d)!==i) continue; f.used++; dates.add(d); const k=nk(ten); let p=daily.get(k); if(!p){ p={ten,ma,days:new Map()}; daily.set(k,p); } const v=p.days.get(d)||[0,0,0,0]; v[0]+=ci; v[1]+=km; v[2]+=dc; v[3]+=l; p.days.set(d,v); } });
+  tr.forEach((f,i)=>{ f.used=0; for(const [ma,ten,d,ci,km,dc,l] of f.rows){ if(owner.get(nk(ten)+'|'+d)!==i) continue; f.used++; dates.add(d); const k=nk(ten); let p=daily.get(k); if(!p){ p={ten,ma,days:new Map()}; daily.set(k,p); } const v=p.days.get(d)||[0,0,0,0]; v[0]+=ci; v[1]+=km; v[2]+=dc; v[3]+=l; p.days.set(d,v); } });
   const leave=new Map(); for(const f of files.filter(f=>f.kind==='leave')) for(const [n,d,x] of f.rows){ const k=nk(n); if(!leave.has(k)) leave.set(k,new Map()); leave.get(k).set(d,(leave.get(k).get(d)||0)+x); }
   DLGD={files,daily,dates,leave,at,cov:{}}; dlRebuild(); }
 async function dlFromDrive(auto){
@@ -1658,6 +1660,7 @@ async function dlFromDrive(auto){
       if(!auto) msg(`Hiệu suất đi lại: đang tải ${f.title} (${i+1}/${list.length})…`);
       try{ const p=dlParse(await src.get(f)); files.push({id:f.id,title:f.title,mt:f.modifiedTime,kind:p.kind,sheet:p.sheet,rows:p.rows}); }
       catch(e){ if(e&&e.code&&!['tool_error','server_unavailable','upstream_error'].includes(e.code)) throw e; files.push({id:f.id,title:f.title,mt:f.modifiedTime,kind:'err',err:e&&e.code?gdErr(e):(e&&e.message||String(e)),rows:[]}); } }
+    for(const o of old.values()) if(o.local) files.push(o);
     const at=new Date().toISOString(); dlBuildGD(files,at);
     try{ localStorage.setItem('tk_dlgd',JSON.stringify({at,files:files.map(({used,...f})=>f)})); }catch(e){}
     if(!auto) msg(`Hiệu suất đi lại: đã đọc ${files.filter(f=>f.kind==='travel').length} file đi lại từ Google Drive.`,'ok');
@@ -1665,6 +1668,19 @@ async function dlFromDrive(auto){
   finally{ dlBusy=false; dlMenu(); if(M){ DLCC.clear(); renderDl(false); } navSync(); }
 }
 try{ const c=JSON.parse(localStorage.getItem('tk_dlgd')||'null'); if(c&&c.files) dlBuildGD(c.files,c.at); }catch(e){}
+// nạp file đi lại từ máy: file mới nạp thắng các file cũ ở những ngày trùng
+async function dlFromLocal(list){
+  list=[...list].filter(Boolean); if(!list.length||dlBusy) return 0; dlBusy=true; dlErr=''; dlMenu(); const ok=[], bad=[];
+  try{ const files=(DLGD?DLGD.files:[]).slice();
+    for(const [i,f] of list.entries()){ msg(`Hiệu suất đi lại: đang đọc ${f.name} (${i+1}/${list.length})…`);
+      try{ const p=dlParse(new Uint8Array(await f.arrayBuffer())); if(p.kind==='skip'||!p.rows.length){ bad.push(`${f.name}: không thấy sheet "Báo cáo tổng hợp" hoặc bảng nghỉ phép`); continue; }
+        const id='local:'+f.name, mt=new Date().toISOString(); const j=files.findIndex(x=>x.id===id); const o={id,title:f.name,mt,kind:p.kind,sheet:p.sheet,rows:p.rows,local:true};
+        if(j>=0) files[j]=o; else files.push(o); ok.push(`${f.name} (${fmt(p.rows.length)} dòng)`); }
+      catch(e){ bad.push(`${f.name}: ${e&&e.message||e}`); } }
+    if(ok.length){ const at=new Date().toISOString(); dlBuildGD(files,at); try{ localStorage.setItem('tk_dlgd',JSON.stringify({at,files:files.map(({used,...f})=>f)})); }catch(e){} }
+    msg((ok.length?['Hiệu suất đi lại: đã nạp '+ok.join(', ')]:[]).concat(bad).join(' · '),bad.length?'err':'ok');
+  } finally{ dlBusy=false; dlMenu(); if(M){ DLCC.clear(); renderDl(false); } navSync(); }
+  return ok.length; }
 // trang 7: dữ liệu cần kiểm tra
 function dlCk(scope,vs){
   const box=$('dlCk'); box.replaceChildren(); const mk=vs.map(v=>ymk(v.year,v.month)); const per=o=>o.m||1;
@@ -1706,13 +1722,18 @@ function dlCk(scope,vs){
 // trang 8: nguồn dữ liệu
 function dlSrc(){
   const b=$('dlSrcBox'); b.replaceChildren();
-  const a=document.createElement('a'); a.href='https://drive.google.com/drive/folders/'+DL_FOLDER; a.target='_blank'; a.rel='noopener'; a.textContent='WCM bao cao di chuyen';
+  const a=document.createElement('a'); a.href='https://drive.google.com/drive/folders/'+DL_FOLDER; a.target='_blank'; a.rel='noopener'; a.textContent=DL_FOLDER===DL_FOLDER0?'WCM bao cao di chuyen':'thư mục đã kết nối';
   const p1=el('div'); p1.append(document.createTextNode('Thư mục: '),a,document.createTextNode('. Mỗi file là báo cáo di chuyển xuất từ hệ thống (sheet "Báo cáo tổng hợp"). Thêm file mới vào thư mục, dashboard tự đọc khi mở trang.'));
   const st=el('div',dlBusy?'Đang đọc Google Drive…':dlErr?'Không đọc được: '+dlErr:DLGD?`Đọc lần cuối: ${new Date(DLGD.at).toLocaleString('vi-VN')} · ${DLGD.files.filter(f=>f.kind==='travel').length} file đi lại · ${DLGD.dates.size} ngày có dữ liệu · ${DLGD.daily.size} nhân viên`:'Chưa đọc Google Drive. Bấm nút bên dưới.','st'+(dlErr?' err':''));
-  const btn=el('button',dlBusy?'Đang đọc…':'Lấy lại từ Google Drive'); btn.type='button'; btn.disabled=dlBusy; btn.onclick=()=>dlFromDrive(false);
+  const btn=el('button',dlBusy?'Đang đọc…':'Lấy lại từ Google Drive'); btn.type='button'; btn.disabled=dlBusy; btn.onclick=()=>dlFromDrive(false); const btnL=el('button','Nạp file đi lại từ máy'); btnL.type='button'; btnL.disabled=dlBusy; btnL.onclick=()=>$('dlFile').click(); btnL.style.marginLeft='8px'; if($('gdDl').hidden) btn.hidden=true;
   const lvF=DLGD&&DLGD.files.find(f=>f.kind==='leave'); const lvN=lvF?DLGD.files.filter(f=>f.kind==='leave').reduce((s,f)=>s+f.rows.length,0):0;
   const p2=el('div',`Nghỉ phép: ${lvF?`bảng "${lvF.title}" có ${fmt(lvN)} dòng`:'chưa thấy bảng nghỉ phép trong thư mục'}. Bản chụp cũ (T7 đến T10) lấy từ trang "Hiệu suất đi lại nhân viên" lúc ${DLX.tao_luc}.`,'cap');
-  b.append(p1,st,btn,p2);
+  const lk=el('div','','cap'); lk.style.margin='10px 0'; const inp=document.createElement('input'); inp.type='url'; inp.placeholder='Dán link thư mục Google Drive chứa file đi lại'; inp.value='https://drive.google.com/drive/folders/'+DL_FOLDER; inp.style.cssText='width:min(520px,100%);padding:6px 8px;margin-right:8px';
+  const bl=el('button','Kết nối link'); bl.type='button'; bl.disabled=dlBusy; bl.onclick=()=>{ const id=dlFolderId(inp.value); if(!id){ msg('Link Google Drive không hợp lệ: cần link thư mục dạng drive.google.com/drive/folders/…','err'); return; }
+    DL_FOLDER=id; try{ localStorage.setItem('tk_dlfolder',id); }catch(e){} if(DLGD) DLGD.files=DLGD.files.filter(f=>f.local); dlFromDrive(false); };
+  const br=el('button','Về thư mục mặc định'); br.type='button'; br.style.marginLeft='8px'; br.hidden=DL_FOLDER===DL_FOLDER0; br.onclick=()=>{ DL_FOLDER=DL_FOLDER0; try{ localStorage.removeItem('tk_dlfolder'); }catch(e){} if(DLGD) DLGD.files=DLGD.files.filter(f=>f.local); dlFromDrive(false); };
+  lk.append(inp,bl,br); if($('gdDl').hidden) lk.hidden=true;
+  b.append(p1,st,btn,btnL,lk,p2);
   // phạm vi từng tháng
   const t=$('tDlCov'); t.replaceChildren(); const h=t.createTHead().insertRow(); for(const [c,l] of [['Tháng',1],['Đang dùng',1],['Drive có',1],['Ngày thiếu',1],['Nhân viên']]) h.append(el('th',c,l?'l':''));
   const tb=t.createTBody(); const ms=[...new Set([...DLS.thang.map(a=>a[2]),...Object.keys(DLGD?DLGD.cov:{})])].sort();
@@ -2373,7 +2394,7 @@ async function fromDrive(auto){
   }catch(e){ if(auto){ msg(''); return; } const t=e&&e.code?gdErr(e):(e&&e.message||String(e)); msg(/failed to fetch|network/i.test(t)?'Không kết nối được Google Drive. Hãy đăng nhập claude.ai rồi thử lại, hoặc dùng "Nạp file Excel".':(/^Google Drive/.test(t)?t:'Google Drive: '+t),'err'); }
   finally{ btn.disabled=false; lb.textContent=old; }
 }
-$('gd').onclick=()=>fromDrive(false); $('gdDl').onclick=()=>{ dlFromDrive(false); };
+$('gd').onclick=()=>fromDrive(false); $('gdDl').onclick=()=>{ dlFromDrive(false); }; $('dlUp').onclick=()=>$('dlFile').click(); $('dlFile').onchange=e=>{ dlFromLocal(e.target.files).finally(()=>{ e.target.value=''; }); };
 if(!(window.claude&&window.claude.use)&&!GD_API_KEY){ $('gd').hidden=true; $('gdDl').hidden=true; }   // web riêng chưa có khóa API thì không đọc được Drive
 function readOne(f){
   return new Promise((ok,no)=>{ const rd=new FileReader();
@@ -2384,7 +2405,8 @@ function readOne(f){
 async function readFiles(files){
   files=[...files].filter(Boolean); if(!files.length) return;
   msg(`Đang đọc ${files.length} file…`); const done=[], bad=[];
-  for(const f of files){ try{ done.push(await readOne(f)); }catch(e){ bad.push(e.message); } }
+  const tl=[]; for(const f of files){ try{ done.push(await readOne(f)); }catch(e){ let p=null; try{ p=dlParse(new Uint8Array(await f.arrayBuffer())); }catch(_){} if(p&&p.kind!=='skip'&&p.rows.length) tl.push(f); else bad.push(e.message); } }
+  if(tl.length){ await dlFromLocal(tl); if(!done.length&&!bad.length) return; }
   if(done.length){ memo.set(false); SEL=null; showMonth(); saveStore(); go(0); }
   msg(done.map(d=>`Đã nạp ${d.file} (${fmt(d.n)} ticket, tháng ${d.ms.join(', ')})`).concat(bad).join(' · '),bad.length?'err':'ok');
   window.scrollTo({top:0});
