@@ -610,7 +610,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
   </div>
   <a class="btn hdrup" id="appTong" href="https://energy-projects.vercel.app/" target="_blank" rel="noopener" title="Xem Energy Projects ngay trong trang (Ctrl+bấm để mở tab mới)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><span class="lbl">Energy</span></a>
   <a class="btn hdrup" id="appChk" href="https://wcm-technical-public.vercel.app/" target="_blank" rel="noopener" title="Xem Form checklist ngay trong trang (Ctrl+bấm để mở tab mới)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M14.5 8.5H17M14.5 14.5H17"/></svg><span class="lbl">Form checklist</span></a>
-  <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button><button data-g="3" role="tab"><b>Nhóm 3</b><span>Thay tủ mát</span></button></div>
+  <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button></div>
   <div class="actions">
     <div class="more">
       <button class="btn ghost" id="moreBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="Chức năng">Chức năng <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.4"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -633,7 +633,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
   <div class="pager"><button class="pg" id="pPrev" type="button" aria-label="Trang trước">‹</button><span id="pNum">1/7</span><button class="pg" id="pNext" type="button" aria-label="Trang sau">›</button></div>
 </div></nav>
 
-<div id="g3" hidden><div class="g3bar"><span id="g3txt">Theo dõi thay tủ mát tại 47 cửa hàng WinCommerce</span><a id="g3lnk" href="https://wcm-thay-tu-mat.vercel.app/" target="_blank" rel="noopener">Mở trong tab mới ↗</a></div><iframe id="g3f" title="Theo dõi thay tủ mát WCM" loading="lazy" allow="clipboard-write"></iframe><iframe id="g4f" title="Energy Projects" loading="lazy" allow="clipboard-write" hidden></iframe><iframe id="g5f" title="Form checklist" loading="lazy" allow="clipboard-write; camera; geolocation" hidden></iframe></div>
+<div id="g3" hidden><div class="g3bar"><span id="g3txt"></span><a id="g3lnk" href="#" target="_blank" rel="noopener">Mở trong tab mới ↗</a></div><iframe id="g4f" title="Energy Projects" loading="lazy" allow="clipboard-write" hidden></iframe><iframe id="g5f" title="Form checklist" loading="lazy" allow="clipboard-write; camera; geolocation" hidden></iframe></div>
 <div class="wrap"><main id="pages">
   <section class="page p-ov" data-title="Tổng quan" id="pg-ov">
     <div class="area"><span class="flab">Khu vực</span><div class="seg" id="aReg"><button data-v="" aria-pressed="true">Cả nước</button><button data-v="Miền Bắc">Miền Bắc</button><button data-v="Miền Nam">Miền Nam</button></div>
@@ -2136,19 +2136,19 @@ const TABS=PAGES.map((p,k)=>{ const b=el('button',p.dataset.title); b.type='butt
 const DLI=PAGES.findIndex(p=>p.id==='pg-dl'); let G1=0; TABS[DLI].hidden=true;
 let G3=false;
 function navSync(){ const g2=PI===DLI; if(!g2) G1=PI; $('tabs').hidden=g2; $('tabs2').hidden=!g2; document.body.classList.toggle('g2',g2);
-  $('navGrp').querySelectorAll('button').forEach(b=>{ const on=G3?(G3==='tm'&&b.dataset.g==='3'):b.dataset.g===(g2?'2':'1'); b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; if(b.dataset.g==='2') b.disabled=!!TABS[DLI].disabled; });
+  $('navGrp').querySelectorAll('button').forEach(b=>{ const on=G3?false:b.dataset.g===(g2?'2':'1'); b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; if(b.dataset.g==='2') b.disabled=!!TABS[DLI].disabled; });
   const sb=$('sub'); if(g2){ if(sb.dataset.s1==null) sb.dataset.s1=sb.hidden?'':'0'; if(sb.dataset.t1==null) sb.dataset.t1=sb.textContent; sb.textContent=dlStamp(); sb.hidden=false; } else if(sb.dataset.s1!=null){ sb.textContent=sb.dataset.t1; sb.hidden=sb.dataset.s1===''; delete sb.dataset.s1; delete sb.dataset.t1; }
   const t=$('ttl'); if(g2){ if(!t.textContent.startsWith('Hiệu suất')) t.dataset.t1=t.textContent; t.textContent='Hiệu suất đi lại nhân viên'+(M?(SEL.all?' · trung bình các tháng':` · tháng ${M.month}/${M.year}`):''); } else if(t.dataset.t1!=null&&t.textContent.startsWith('Hiệu suất')) t.textContent=t.dataset.t1;
   if(g2){ const pi=DLSUB.findIndex(x=>x[0]===DLV.pg); $('pNum').textContent=`${pi+1}/${DLSUB.length}`; $('pPrev').disabled=pi<=0; $('pNext').disabled=pi>=DLSUB.length-1; }
   else { const vis=PAGES.map((p,k)=>k).filter(k=>k!==DLI&&!TABS[k].disabled); $('pNum').textContent=`${vis.indexOf(PI)+1}/${vis.length}`; $('pPrev').disabled=PI<=vis[0]; $('pNext').disabled=PI>=vis[vis.length-1]; } }
-const G3APP={tm:{f:'g3f',u:'https://wcm-thay-tu-mat.vercel.app/',bar:'Theo dõi thay tủ mát tại 47 cửa hàng WinCommerce',ttl:'Theo dõi thay tủ mát WCM'},en:{f:'g4f',u:'https://energy-projects.vercel.app/',bar:'Energy Projects: tiến độ dự án Solar, kiểm soát nhiệt độ, Bess',ttl:'Energy Projects'},ck:{f:'g5f',u:'https://wcm-technical-public.vercel.app/',bar:'Form checklist kỹ thuật WCM',ttl:'Form checklist'}};
-function showG3(m){ if(m===true) m='tm'; const t=$('ttl'); if(m===G3) return; const was=G3; G3=m; document.body.classList.toggle('g3',!!m); $('g3').hidden=!m;
+const G3APP={en:{f:'g4f',u:'https://energy-projects.vercel.app/',bar:'Energy Projects: tiến độ dự án Solar, kiểm soát nhiệt độ, Bess',ttl:'Energy Projects'},ck:{f:'g5f',u:'https://wcm-technical-public.vercel.app/',bar:'Form checklist kỹ thuật WCM',ttl:'Form checklist'}};
+function showG3(m){ const t=$('ttl'); if(m===G3) return; const was=G3; G3=m; document.body.classList.toggle('g3',!!m); $('g3').hidden=!m;
   if(m){ const a=G3APP[m]; for(const k in G3APP) $(G3APP[k].f).hidden=k!==m; const f=$(a.f); if(!f.src) f.src=a.u; $('g3txt').textContent=a.bar; $('g3lnk').href=a.u; document.documentElement.style.setProperty('--h3',($('hdr').offsetHeight+$('g3').querySelector('.g3bar').offsetHeight)+'px'); if(!was) t.dataset.t3=t.textContent; window.scrollTo({top:0}); }
   else if(t.dataset.t3!=null){ t.textContent=t.dataset.t3; delete t.dataset.t3; }
   for(const [id,k] of [['appTong','en'],['appChk','ck']]){ $(id).classList.toggle('on',m===k); $(id).setAttribute('aria-pressed',m===k?'true':'false'); }
   navSync(); if(m) t.textContent=G3APP[m].ttl; }
 for(const [id,k] of [['appTong','en'],['appChk','ck']]) $(id).addEventListener('click',e=>{ if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1) return; e.preventDefault(); showG3(k); });
-$('navGrp').querySelectorAll('button').forEach((b,k,all)=>{ b.type='button'; b.onclick=()=>{ if(b.dataset.g==='3') return showG3(true); showG3(false); if(b.dataset.g==='2'){ if(PI!==DLI) go(DLI); } else if(PI===DLI) go(G1===DLI?0:G1); };
+$('navGrp').querySelectorAll('button').forEach((b,k,all)=>{ b.type='button'; b.onclick=()=>{ showG3(false); if(b.dataset.g==='2'){ if(PI!==DLI) go(DLI); } else if(PI===DLI) go(G1===DLI?0:G1); };
   b.onkeydown=e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return; e.preventDefault(); e.stopPropagation(); const n=all[(k+(e.key==='ArrowRight'?1:all.length-1))%all.length]; n.focus(); n.click(); }; });
 
 // hiệu ứng vào trang: các ô hiện lần lượt
