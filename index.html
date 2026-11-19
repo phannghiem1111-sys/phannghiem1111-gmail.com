@@ -608,6 +608,7 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
     <h1 id="ttl">Ticket kỹ thuật tháng —</h1>
     <div class="sub" id="sub" hidden>Đang tải dữ liệu…</div>
   </div>
+  <button class="btn hdrup" id="gdDl" type="button" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công</span></button>
   <a class="btn hdrup" id="appChk" href="https://wcm-technical-public.vercel.app/" target="_blank" rel="noopener" title="Xem Form checklist ngay trong trang (Ctrl+bấm để mở tab mới)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M14.5 8.5H17M14.5 14.5H17"/></svg><span class="lbl">Form checklist</span></a>
   <a class="btn hdrup" id="appEn" href="https://energy-projects.vercel.app/" target="_blank" rel="noopener" title="Mở Energy Projects trong tab mới"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><span class="lbl">Energy</span></a>
   <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button></div>
@@ -616,10 +617,12 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
       <button class="btn ghost" id="moreBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="Chức năng">Chức năng <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.4"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="menu" id="moreMenu" role="menu" hidden>
         <div class="mh">Nguồn dữ liệu</div>
+        <button class="mi" id="gd" type="button" role="menuitem" title="Đọc các file Excel trong thư mục Google Drive &quot;FILE THO TICKET&quot;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l4-7 4 7M8 10l4-7 4 7-4 7M4 17h16"/></svg><span class="lbl">Lấy từ Google Drive</span></button>
         <label class="mi" for="file" id="pick" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 15v4h14v-4"/></svg>Nạp file Excel</label>
         <div class="mh">Xuất báo cáo</div>
         <button class="mi" id="dl" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Tải Excel</button>
         <div class="msep"></div>
+        <button class="mi" id="rl" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Xóa và nạp lại tháng này</span></button>
         <button class="mi danger" id="clr" type="button" role="menuitem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>Xóa dữ liệu</button>
       </div>
     </div>
@@ -755,6 +758,15 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
       <div class="dlpg" data-k="ck" hidden>
         <p class="dlins" id="dlCkSum"></p>
         <div class="dlck" id="dlCk"></div>
+      </div>
+      <div class="dlpg" data-k="src" hidden>
+        <div class="dlgrid">
+          <div class="stbox"><h3>Thư mục Google Drive</h3><div class="dlsrc" id="dlSrcBox"></div></div>
+          <div class="stbox"><h3>Phạm vi dữ liệu từng tháng</h3><p class="cap">Tháng nào trên Drive đủ ngày thì dùng số liệu Drive, còn thiếu ngày thì giữ bản chụp cũ.</p><div class="tbl"><table class="dlmt" id="tDlCov"></table></div></div>
+        </div>
+        <h3 class="dlsub">Các file trong thư mục</h3>
+        <div class="tbl"><table class="dlmt" id="tDlFiles"></table></div>
+        <p class="cap">Cách tính: đọc sheet "Báo cáo tổng hợp" của từng file (Mã nhân viên, Họ và tên, Ngày đi công tác, Tổng điểm checkin, Tổng khoảng cách, Tổng thời gian di chuyển, Tổng thời gian làm việc). Ngày công = số ngày có dòng dữ liệu. Giờ đi làm = giờ làm việc + giờ di chuyển. Giờ chuẩn = 8 giờ × số ngày thứ Hai đến thứ Bảy, trừ nghỉ phép (lấy từ bảng "Nghi phep nhan vien" trong cùng thư mục). Hai file có cùng ngày thì lấy file sửa sau cùng.</p>
       </div>
       <div class="dlpg" data-k="tb" hidden>
         <h3 class="dlsub">Đánh giá từng tháng</h3>
@@ -1530,7 +1542,7 @@ function dlPool(arr){ if(!arr.length) return null; const S=f=>arr.reduce((a,o)=>
   return {n,nc:S('nc')/n/m,rNc:S('ncc')?S('nc')/S('ncc'):null,rG:S('gch')?S('gdl')/S('gch'):null,km:S('km')/n/m,ci:S('ci')/n/m,tk:S('tk')/n/m,tpd:S('nc')?S('tk')/S('nc'):null,kmt:S('tk')?S('km')/S('tk'):null,rate:S('tk')?S('done')/S('tk'):null,gdc:S('gdc')/n/m,gdl:S('gdl')/n/m,rDc:S('gdl')?S('gdc')/S('gdl'):null}; }
 const DLCLS={ok:['Đạt giờ chuẩn','từ 100% trở lên','--good'],mid:['Gần đạt','80% đến dưới 100%','--warn'],low:['Chưa đạt','dưới 80%','--badt']};
 const clsOf=r=>r==null?null:r>=1?'ok':r>=.8?'mid':'low';
-const DLSUB=[['ov','Tổng quan'],['cls','Phân loại và miền'],['ns','Năng suất ticket'],['nv','Nhân viên'],['nc','Ngày công tháng'],['tb','Trung bình các tháng'],['ck','Dữ liệu cần kiểm tra']];
+const DLSUB=[['ov','Tổng quan'],['cls','Phân loại và miền'],['ns','Năng suất ticket'],['nv','Nhân viên'],['nc','Ngày công tháng'],['tb','Trung bình các tháng'],['ck','Dữ liệu cần kiểm tra'],['src','Nguồn dữ liệu']];
 let DLV={reg:'',lead:'',cls:'',sort:'rG',asc:true,pg:'ov',ncs:'ten',ncAsc:true,rks:'avg',rkAsc:false}, dlKey='', dlClsPlace=null;
 try{ const p=localStorage.getItem('tk_dlpg'); if(DLSUB.some(x=>x[0]===p)) DLV.pg=p; }catch(e){}
 const dlIn=o=>(!DLV.reg||o.mien===DLV.reg)&&(!DLV.lead||o.lead===DLV.lead);
@@ -1894,7 +1906,7 @@ function showMonth(){
   STATS=LIST.map(v=>monthStats(monthView(v.y,v.m)));
   if(SEL.all){ const B=baseStats(STATS); M=allView(B.map(s=>s.v),STATS.filter(s=>!B.includes(s)).map(s=>'T'+s.v.month)); DIV=B.length; }
   else { M=STATS[LIST.findIndex(v=>v.y===SEL.y&&v.m===SEL.m)].v; DIV=1; }
-  renderMonths(); render(); renderOverview(); renderStores(); renderKc(); renderDl(); navSync(); enter(PAGES[PI]); $('dl').hidden=!!SEL.all; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
+  renderMonths(); render(); renderOverview(); renderStores(); renderKc(); renderDl(); navSync(); enter(PAGES[PI]); $('dl').hidden=!!SEL.all; $('rl').hidden=!!SEL.all||$('gd').hidden; $('rl').querySelector('.lbl').textContent=`Xóa và nạp lại tháng ${M.month}`; $('dl').lastChild.textContent=`Tải Excel T${M.month}`;
 }
 
 // ---------------------------------------------------------------- Excel 3 sheet
@@ -2254,6 +2266,10 @@ function clearData(){
   STORE=new Map(); SEL=null; memo.set(true); DB.set('recs',null); gdSeen.set({}); clearView();
   msg('Đã xóa toàn bộ dữ liệu cũ.');
 }
+$('rl').onclick=()=>{ closeMenu(); if(!M||SEL.all) return; const y=M.year||SEL.y, m=M.month;
+  if(!confirm(`Xóa dữ liệu tháng ${m} trên máy này rồi nạp lại tháng ${m} mới nhất từ Google Drive?`)) return;
+  for(const [k,r] of STORE) if(r.created&&r.created.getFullYear()===y&&r.created.getMonth()+1===m) STORE.delete(k);
+  gdSeen.set({}); fromDrive(false); };
 $('clr').onclick=()=>{ closeMenu(); if(confirm('Xóa toàn bộ dữ liệu đã nạp trên máy này?')) clearData(); };
 const mBtn=$('moreBtn'), mMenu=$('moreMenu');
 function closeMenu(){ mMenu.hidden=true; mBtn.setAttribute('aria-expanded','false'); }
@@ -2308,7 +2324,7 @@ function gdErr(e){
 const gdSeen={ get(){ try{ return JSON.parse(localStorage.getItem('tk_gd')||'{}'); }catch(e){ return {}; } }, set(v){ try{ localStorage.setItem('tk_gd',JSON.stringify(v)); }catch(e){} } };
 // Nguồn Drive: trên claude.ai dùng kết nối Google Drive của người xem; trên web riêng (Vercel…) dùng Google Drive API với khóa API
 // (thư mục và file phải để "Bất kỳ ai có đường liên kết đều xem được").
-const GD_API_KEY='';
+const GD_API_KEY='AIzaSyCnYFxa8dhBJrIridkXMP5Xu9_GR7KdxIE';
 const GS='application/vnd.google-apps.spreadsheet', XL='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 async function driveSource(folder){ folder=folder||GD_FOLDER;
   let mcp=null;
@@ -2357,6 +2373,8 @@ async function fromDrive(auto){
   }catch(e){ if(auto){ msg(''); return; } const t=e&&e.code?gdErr(e):(e&&e.message||String(e)); msg(/failed to fetch|network/i.test(t)?'Không kết nối được Google Drive. Hãy đăng nhập claude.ai rồi thử lại, hoặc dùng "Nạp file Excel".':(/^Google Drive/.test(t)?t:'Google Drive: '+t),'err'); }
   finally{ btn.disabled=false; lb.textContent=old; }
 }
+$('gd').onclick=()=>fromDrive(false); $('gdDl').onclick=()=>{ dlFromDrive(false); };
+if(!(window.claude&&window.claude.use)&&!GD_API_KEY){ $('gd').hidden=true; $('gdDl').hidden=true; }   // web riêng chưa có khóa API thì không đọc được Drive
 function readOne(f){
   return new Promise((ok,no)=>{ const rd=new FileReader();
     rd.onerror=()=>no(new Error('Không đọc được file '+f.name));
@@ -2423,6 +2441,8 @@ $('dl').onclick=async()=>{
   }catch(e){ msg(e.message,'err'); }
   for(const r of saved) STORE.set(String(r.id),r);
   showMonth();
+  fromDrive(true);   // mở trang là tự lấy file mới trong thư mục Google Drive
+  setTimeout(()=>dlFromDrive(true),1200);   // và dữ liệu đi lại (thư mục WCM bao cao di chuyen)
 })();
 })();
 </script>
