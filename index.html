@@ -1631,13 +1631,15 @@ function dlDate(v){ if(v==null||v==='') return null;
   if(v instanceof Date) return isoOf(v);
   const t=String(v).trim(); let m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/); if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
   m=t.match(/^(\d{4})-(\d{2})-(\d{2})/); return m?`${m[1]}-${m[2]}-${m[3]}`:null; }
+// tên trùng 2 người khác đội: tách theo mã NV (Trần Văn Trung 6345079 Tuyên Quang, đội Huy)
+const DL_TEN_MA={'6345079':'Trần văn trung (6345079)'};
 function dlParse(bytes){
   const wb=XLSX.read(bytes,{type:'array'}); const S=c=>String(c==null?'':c).trim();
   for(const sn of wb.SheetNames){ const a=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});
     const hi=a.slice(0,15).findIndex(r=>r&&r.some(c=>/^Mã nhân viên$/i.test(S(c)))&&r.some(c=>/^Tổng điểm checkin/i.test(S(c))));
     if(hi>=0){ const h=a[hi].map(S), col=re=>h.findIndex(c=>re.test(c));
       const iM=col(/^Mã nhân viên$/i), iN=col(/^Họ và tên$/i), iD=col(/^Ngày/i), iC=col(/^Tổng điểm checkin/i), iK=col(/khoảng cách/i), iT=col(/Thời gian di chuyển/i), iL=col(/Thời gian làm việc/i);
-      const rows=[]; for(const r of a.slice(hi+1)){ const d=r&&dlDate(r[iD]); if(!d||!r[iN]) continue; rows.push([S(r[iM]),S(r[iN]),d,+r[iC]||0,+r[iK]||0,+r[iT]||0,+r[iL]||0]); }
+      const rows=[]; for(const r of a.slice(hi+1)){ const d=r&&dlDate(r[iD]); if(!d||!r[iN]) continue; const ma=S(r[iM]); rows.push([ma,DL_TEN_MA[ma.replace(/^0+/,'')]||S(r[iN]),d,+r[iC]||0,+r[iK]||0,+r[iT]||0,+r[iL]||0]); }
       return {kind:'travel',sheet:sn,rows}; }
     const li=a.slice(0,8).findIndex(r=>r&&r.some(c=>/^Họ và tên$/i.test(S(c)))&&r.some(c=>/^Ngày nghỉ/i.test(S(c))));
     if(li>=0){ const h=a[li].map(S), iN=h.findIndex(c=>/^Họ và tên$/i.test(c)), iD=h.findIndex(c=>/^Ngày nghỉ/i.test(c)), iS=h.findIndex(c=>/^Số ngày/i.test(c));
