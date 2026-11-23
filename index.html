@@ -610,7 +610,6 @@ tr.nvon td{box-shadow:inset 0 2px 0 var(--accent),inset 0 -2px 0 var(--accent)} 
   </div>
   <button class="btn hdrup" id="dlUp" type="button" title="Chọn file Excel báo cáo di chuyển (sheet &quot;Báo cáo tổng hợp&quot;) hoặc bảng nghỉ phép từ máy để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg><span class="lbl">Nạp file đi lại</span></button><input type="file" id="dlFile" multiple accept=".xlsx,.xls" hidden>
   <button class="btn hdrup" id="gdDl" type="button" title="Đọc báo cáo di chuyển trong thư mục Google Drive &quot;WCM bao cao di chuyen&quot; để cập nhật giờ công"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Cập nhật giờ công</span></button>
-  <a class="btn hdrup" id="appChk" href="https://wcm-technical-public.vercel.app/" target="_blank" rel="noopener" title="Xem Form checklist ngay trong trang (Ctrl+bấm để mở tab mới)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M14.5 8.5H17M14.5 14.5H17"/></svg><span class="lbl">Form checklist</span></a>
   <div class="ngrp" id="navGrp" role="tablist" aria-label="Nhóm báo cáo"><button data-g="1" role="tab"><b>Nhóm 1</b><span>BTBD &amp; SCKT</span></button><button data-g="2" role="tab"><b>Nhóm 2</b><span>Hiệu suất đi lại NV</span></button></div>
   <div class="actions">
     <div class="more">
@@ -2179,9 +2178,9 @@ const G3APP={ck:{f:'g5f',u:'https://wcm-technical-public.vercel.app/',bar:'Form 
 function showG3(m){ const t=$('ttl'); if(m===G3) return; const was=G3; G3=m; document.body.classList.toggle('g3',!!m); $('g3').hidden=!m;
   if(m){ const a=G3APP[m]; for(const k in G3APP) $(G3APP[k].f).hidden=k!==m; const f=$(a.f); if(!f.src) f.src=a.u; $('g3txt').textContent=a.bar; $('g3lnk').href=a.u; document.documentElement.style.setProperty('--h3',($('hdr').offsetHeight+$('g3').querySelector('.g3bar').offsetHeight)+'px'); if(!was) t.dataset.t3=t.textContent; window.scrollTo({top:0}); }
   else if(t.dataset.t3!=null){ t.textContent=t.dataset.t3; delete t.dataset.t3; }
-  for(const [id,k] of [['appChk','ck']]){ $(id).classList.toggle('on',m===k); $(id).setAttribute('aria-pressed',m===k?'true':'false'); }
+  for(const [id,k] of []){ $(id).classList.toggle('on',m===k); $(id).setAttribute('aria-pressed',m===k?'true':'false'); }
   navSync(); if(m) t.textContent=G3APP[m].ttl; }
-for(const [id,k] of [['appChk','ck']]) $(id).addEventListener('click',e=>{ if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1) return; e.preventDefault(); showG3(k); });
+for(const [id,k] of []) $(id).addEventListener('click',e=>{ if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1) return; e.preventDefault(); showG3(k); });
 $('navGrp').querySelectorAll('button').forEach((b,k,all)=>{ b.type='button'; b.onclick=()=>{ showG3(false); if(b.dataset.g==='2'){ if(PI!==DLI) go(DLI); } else if(PI===DLI) go(G1===DLI?0:G1); };
   b.onkeydown=e=>{ if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return; e.preventDefault(); e.stopPropagation(); const n=all[(k+(e.key==='ArrowRight'?1:all.length-1))%all.length]; n.focus(); n.click(); }; });
 
